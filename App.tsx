@@ -27,22 +27,7 @@ import {
 } from "./src/utils/storage";
 import RoleBasedStack from "./src/navigation/RoleBasedStack";
 
-/* ✅ AUTH CONTEXT */
 
-// logout code will be here in future, so created context in main app file itself
-
-// const { setIsLoggedIn } =
-//   useContext(AuthContext);
-
-// const handleLogout = async () => {
-
-//   await removeStorageData(
-//     STORAGE_KEYS.LOGIN_DATA
-//   );
-
-//   setIsLoggedIn(false);
-
-// };
 
 export const AuthContext =
   createContext<any>(null);
@@ -104,6 +89,9 @@ const App = () => {
 
   }, [isLoggedIn]);
 
+
+
+
   /* ---------------- LOADING STATE ---------------- */
 
   if (isLoggedIn === null) {
@@ -139,7 +127,6 @@ const App = () => {
       value={{
         isLoggedIn,
         setIsLoggedIn,
-
         userRole,
         setUserRole,
       }}
@@ -207,3 +194,7 @@ const styles = StyleSheet.create({
   },
 
 });
+
+function removeStorageData(LOGIN_DATA: string) {
+  throw new Error("Function not implemented.");
+}

@@ -9,6 +9,7 @@ import HouseholdReviewScreen from "../screens/districtAdmin/HouseholdReviewScree
 import FraudCasesScreen from "../screens/districtAdmin/FraudCasesScreen";
 import ReportsScreen from "../screens/superAdmin/ReportsScreen";
 import NotificationsScreen from "../screens/NotificationsScreen";
+import { commonHeaderOptions } from "./CommonHeaderOptions";
 
 /* ---------------- STACK ---------------- */
 
@@ -41,10 +42,7 @@ const DistrictAdminStack = () => {
 
         <Stack.Navigator
             initialRouteName="DistrictDashboard"
-            screenOptions={{
-                headerShown: false,
-                animation: "slide_from_right",
-            }}
+            screenOptions={commonHeaderOptions}
         >
 
             {/* DASHBOARD */}

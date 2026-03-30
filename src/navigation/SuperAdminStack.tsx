@@ -9,6 +9,7 @@ import DistrictPerformanceScreen from "../screens/superAdmin/DistrictPerformance
 import FraudAnalyticsScreen from "../screens/superAdmin/FraudAnalyticsScreen";
 import ReportsScreen from "../screens/superAdmin/ReportsScreen";
 import UserManagementScreen from "../screens/superAdmin/UserManagementScreen";
+import { commonHeaderOptions } from "./CommonHeaderOptions";
 
 /* ---------------- PARAM TYPES ---------------- */
 
@@ -45,10 +46,7 @@ const SuperAdminStack = () => {
 
         <Stack.Navigator
             initialRouteName="NationalDashboard"
-            screenOptions={{
-                headerShown: false,
-                animation: "slide_from_right",
-            }}
+            screenOptions={commonHeaderOptions}
         >
 
             {/* NATIONAL DASHBOARD */}

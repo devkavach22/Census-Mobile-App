@@ -1,11 +1,11 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import HomeScreen from "../screens/enumerator/HomeScreen";
+import EnumeratorDashboard from "../screens/enumerator/EnumeratorDashboard";
 import MembersScreen from "../screens/enumerator/MembersScreen";
 import SurveyScreen from "../screens/enumerator/SurveyScreen";
 import SummaryScreen from "../screens/enumerator/SummaryScreen";
-import { MapScreen } from "../screens/enumerator/MapScreen";
+import MapScreen from "../screens/enumerator/MapScreen";
 import {
     getStorageData,
     STORAGE_KEYS,
@@ -20,7 +20,7 @@ const EnumeratorStack = () => (
 
         <Stack.Screen
             name="EnumeratorDashboard"
-            component={HomeScreen}
+            component={EnumeratorDashboard}
         />
 
         <Stack.Screen
@@ -56,40 +56,6 @@ const EnumeratorStack = () => (
     </Stack.Navigator>
 );
 
-// const AppStack = () => {
 
-//     return (
-//         <Stack.Navigator
-//             screenOptions={{
-//                 headerShown: false,
-//             }}
-//         >
-//             <Stack.Screen
-//                 name="Home"
-//                 component={HomeScreen}
-//             />
-
-//             <Stack.Screen
-//                 name="Household"
-//                 component={HouseholdScreen}
-//             />
-
-//             <Stack.Screen
-//                 name="Members"
-//                 component={MembersScreen}
-//             />
-
-//             <Stack.Screen
-//                 name="Survey"
-//                 component={SurveyScreen}
-//             />
-
-//             <Stack.Screen
-//                 name="Summary"
-//                 component={SummaryScreen}
-//             />
-//         </Stack.Navigator>
-//     );
-// };
 
 export default EnumeratorStack;
