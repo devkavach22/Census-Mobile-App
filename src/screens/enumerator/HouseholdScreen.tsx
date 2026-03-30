@@ -7,8 +7,8 @@ import {
     StyleSheet,
 } from "react-native";
 
-import FormInput from "../components/FormInput";
-import { isTablet } from "../utils/responsive";
+import FormInput from "../../components/FormInput";
+import { isTablet } from "../../utils/responsive";
 
 const HouseholdScreen = ({ navigation }: any) => {
     return (
