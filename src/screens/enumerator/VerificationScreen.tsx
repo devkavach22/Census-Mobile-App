@@ -16,7 +16,10 @@ const VerificationScreen = () => {
     <View style={styles.mainContainer}>
       {/* Header Section */}
       <View style={styles.header}>
-        <TouchableOpacity style={styles.backCircle}>
+        <TouchableOpacity
+          style={styles.backCircle}
+          onPress={() => navigation.goBack()}
+        >
           <AppIcon type="Ionicons" name="arrow-back" size={20} color="#fff" />
         </TouchableOpacity>
         <View style={{ marginLeft: 12 }}>

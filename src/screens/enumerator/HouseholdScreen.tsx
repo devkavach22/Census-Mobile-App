@@ -6,6 +6,7 @@ import {
   Text,
   StyleSheet,
   TextInput,
+  StatusBar,
 } from 'react-native';
 import { isTablet } from '../../utils/responsive';
 import AppIcon from '../../components/common/AppIcon';
@@ -16,9 +17,13 @@ const HouseholdScreen = () => {
   return (
     <View style={styles.mainContainer}>
       {/* Header / Stepper Section */}
+      <StatusBar translucent barStyle="default" />
       <View style={styles.header}>
         <View style={styles.headerTop}>
-          <TouchableOpacity style={styles.backCircle}>
+          <TouchableOpacity
+            style={styles.backCircle}
+            onPress={() => navigation.goBack()}
+          >
             <AppIcon type="Ionicons" name="arrow-back" size={20} color="#fff" />
           </TouchableOpacity>
           <View style={{ marginLeft: 12 }}>

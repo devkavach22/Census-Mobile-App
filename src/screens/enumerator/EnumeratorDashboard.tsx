@@ -14,6 +14,7 @@ import { AuthContext } from '../../../App';
 import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FONTS } from '../../theme/fonts';
+import { showToast } from '../../components/common/showToast';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 600;
 
@@ -27,11 +28,7 @@ const EnumeratorDashboard = () => {
   };
   return (
     <SafeAreaView style={styles.container}>
-      <StatusBar
-        translucent
-        backgroundColor={'#00000000'}
-        barStyle="dark-content"
-      />
+      <StatusBar translucent barStyle="default" />
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* ================= HEADER ================= */}
 
@@ -234,7 +231,11 @@ const QuickAction = ({ title, icon, type = 'Material', navigateTo }: any) => {
   return (
     <TouchableOpacity
       style={styles.quickCard}
-      onPress={() => navigateTo && Navigation.navigate(navigateTo as never)}
+      onPress={() =>
+        navigateTo
+          ? Navigation.navigate(navigateTo as never)
+          : showToast('Reports feature coming soon')
+      }
     >
       <View style={styles.quickIcon}>
         <AppIcon type={type} name={icon} size={22} color="#2563EB" />
