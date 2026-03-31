@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import React, { useContext } from 'react';
 import {
   View,
   Text,
@@ -7,96 +7,70 @@ import {
   ScrollView,
   Dimensions,
   StatusBar,
-} from "react-native";
-import AppIcon from "../../components/common/AppIcon";
-import { removeStorageData, STORAGE_KEYS } from "../../utils/storage";
-import { AuthContext } from "../../../App";
-import { useNavigation } from "@react-navigation/native";
-import { SafeAreaView } from "react-native-safe-area-context";
+} from 'react-native';
+import AppIcon from '../../components/common/AppIcon';
+import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
+import { AuthContext } from '../../../App';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { FONTS } from '../../theme/fonts';
-const { width } = Dimensions.get("window");
+const { width } = Dimensions.get('window');
 const isTablet = width >= 600;
 
 const EnumeratorDashboard = () => {
   const Navigation = useNavigation();
-  const { userRole, setIsLoggedIn } =
-    useContext(AuthContext);
+  const { userRole, setIsLoggedIn } = useContext(AuthContext);
 
   const logOut = async () => {
-    await removeStorageData(
-      STORAGE_KEYS.LOGIN_DATA
-    );
+    await removeStorageData(STORAGE_KEYS.LOGIN_DATA);
     setIsLoggedIn(false);
   };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar
         translucent
-        backgroundColor={"#00000000"}
-        barStyle="dark-content" />
+        backgroundColor={'#00000000'}
+        barStyle="dark-content"
+      />
       <ScrollView showsVerticalScrollIndicator={false}>
-
         {/* ================= HEADER ================= */}
 
         <View style={styles.header}>
-
           <View style={styles.userRow}>
-
             {/* Avatar */}
 
             <View style={styles.avatar}>
-              <AppIcon
-                type="Material"
-                name="person"
-                size={28}
-                color="#fff"
-              />
+              <AppIcon type="Material" name="person" size={28} color="#fff" />
             </View>
 
             <View>
-              <Text style={styles.userName}>
-                Ramesh Kumar - Enumerator
-              </Text>
+              <Text style={styles.userName}>Ramesh Kumar - Enumerator</Text>
 
               <Text style={styles.userLocation}>
                 Ward 12, Saket, South Delhi
               </Text>
             </View>
-
           </View>
 
           <View style={styles.statusRow}>
-
             {/* Online Badge */}
 
             <View style={styles.onlineBadge}>
               <View style={styles.dot} />
-              <Text style={styles.onlineText}>
-                Online
-              </Text>
+              <Text style={styles.onlineText}>Online</Text>
             </View>
 
             {/* Lock Icon */}
 
             <TouchableOpacity style={styles.lockIcon} onPress={logOut}>
-              <AppIcon
-                type="Feather"
-                name="lock"
-                size={18}
-                color="#CBD5F5"
-              />
+              <AppIcon type="Feather" name="lock" size={18} color="#CBD5F5" />
             </TouchableOpacity>
-
           </View>
-
         </View>
-
-
 
         {/* ================= STATS ================= */}
 
         <View style={styles.statsRow}>
-
           <StatCard
             title="ASSIGNED"
             value="48"
@@ -124,27 +98,17 @@ const EnumeratorDashboard = () => {
             subtitle="Review needed"
             color="#EF4444"
           />
-
         </View>
-
-
 
         {/* ================= PROGRESS ================= */}
 
         <View style={styles.progressCard}>
-
           <View style={styles.progressHeader}>
-
-            <Text style={styles.progressTitle}>
-              Today's Progress
-            </Text>
+            <Text style={styles.progressTitle}>Today's Progress</Text>
 
             <View style={styles.progressBadge}>
-              <Text style={styles.progressBadgeText}>
-                8 of 12 done today
-              </Text>
+              <Text style={styles.progressBadgeText}>8 of 12 done today</Text>
             </View>
-
           </View>
 
           <View style={styles.progressBarBackground}>
@@ -152,35 +116,21 @@ const EnumeratorDashboard = () => {
           </View>
 
           <View style={styles.progressFooter}>
+            <Text style={styles.progressTarget}>Target: 12/day</Text>
 
-            <Text style={styles.progressTarget}>
-              Target: 12/day
-            </Text>
-
-            <Text style={styles.progressPercent}>
-              66% complete
-            </Text>
-
+            <Text style={styles.progressPercent}>66% complete</Text>
           </View>
-
         </View>
-
-
 
         {/* ================= MAIN GRID ================= */}
 
         <View style={styles.mainRow}>
-
           {/* QUICK ACTIONS */}
 
           <View style={styles.quickActionsCard}>
-
-            <Text style={styles.sectionTitle}>
-              QUICK ACTIONS
-            </Text>
+            <Text style={styles.sectionTitle}>QUICK ACTIONS</Text>
 
             <View style={styles.quickGrid}>
-
               <QuickAction
                 title="Add Household"
                 icon="home"
@@ -201,25 +151,14 @@ const EnumeratorDashboard = () => {
                 navigateTo="MapView"
               />
 
-              <QuickAction
-                title="My Reports"
-                icon="file-text"
-                type="Feather"
-              />
-
+              <QuickAction title="My Reports" icon="file-text" type="Feather" />
             </View>
-
           </View>
-
-
 
           {/* NOTIFICATIONS */}
 
           <View style={styles.notificationsCard}>
-
-            <Text style={styles.sectionTitle}>
-              NOTIFICATIONS
-            </Text>
+            <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
 
             <NotificationItem
               icon="warning"
@@ -246,53 +185,31 @@ const EnumeratorDashboard = () => {
               title="HH-1039 verified"
               subtitle="Aadhaar match confirmed • 2 hr ago"
             />
-
           </View>
-
         </View>
-
-
 
         {/* ================= AI ASSISTANT ================= */}
 
         <View style={styles.aiCard}>
-
           <View style={styles.aiHeader}>
-
             <View style={styles.aiTitleRow}>
+              <AppIcon type="Feather" name="cpu" size={18} color="#2563EB" />
 
-              <AppIcon
-                type="Feather"
-                name="cpu"
-                size={18}
-                color="#2563EB"
-              />
-
-              <Text style={styles.sectionTitle}>
-                AI SUPPORT ASSISTANT
-              </Text>
-
+              <Text style={styles.sectionTitle}>AI SUPPORT ASSISTANT</Text>
             </View>
 
             <View style={styles.onlineBadgeSmall}>
-              <Text style={styles.onlineText}>
-                Online
-              </Text>
+              <Text style={styles.onlineText}>Online</Text>
             </View>
-
           </View>
 
           <View style={styles.aiMessage}>
-
             <Text style={styles.aiMessageText}>
-              Hello Ramesh! You have 2 pending verifications.
-              Need help with Aadhaar mismatch cases?
+              Hello Ramesh! You have 2 pending verifications. Need help with
+              Aadhaar mismatch cases?
             </Text>
-
           </View>
-
         </View>
-
       </ScrollView>
     </SafeAreaView>
   );
@@ -300,156 +217,113 @@ const EnumeratorDashboard = () => {
 
 export default EnumeratorDashboard;
 
-
-
 /* ================= COMPONENTS ================= */
 
-const StatCard = ({
-  title,
-  value,
-  subtitle,
-  color,
-}: any) => (
+const StatCard = ({ title, value, subtitle, color }: any) => (
   <View style={styles.statCard}>
+    <Text style={styles.statTitle}>{title}</Text>
 
-    <Text style={styles.statTitle}>
-      {title}
-    </Text>
+    <Text style={[styles.statValue, { color }]}>{value}</Text>
 
-    <Text style={[styles.statValue, { color }]}>
-      {value}
-    </Text>
-
-    <Text style={styles.statSubtitle}>
-      {subtitle}
-    </Text>
-
+    <Text style={styles.statSubtitle}>{subtitle}</Text>
   </View>
 );
 
-
-
-const QuickAction = ({
-  title,
-  icon,
-  type = "Material",
-  navigateTo,
-}: any) => {
+const QuickAction = ({ title, icon, type = 'Material', navigateTo }: any) => {
   const Navigation = useNavigation();
   return (
-    <TouchableOpacity style={styles.quickCard} onPress={() => navigateTo && Navigation.navigate(navigateTo as never)}>
+    <TouchableOpacity
+      style={styles.quickCard}
+      onPress={() => navigateTo && Navigation.navigate(navigateTo as never)}
+    >
       <View style={styles.quickIcon}>
-        <AppIcon
-          type={type}
-          name={icon}
-          size={22}
-          color="#2563EB"
-        />
+        <AppIcon type={type} name={icon} size={22} color="#2563EB" />
       </View>
 
-      <Text style={styles.quickText}>
-        {title}
-      </Text>
-
+      <Text style={styles.quickText}>{title}</Text>
     </TouchableOpacity>
-  )
+  );
 };
-
-
 
 const NotificationItem = ({
   title,
   subtitle,
   icon,
   color,
-  type = "Material",
+  type = 'Material',
 }: any) => (
   <View style={styles.notificationItem}>
-
     <View style={styles.notificationIcon}>
-      <AppIcon
-        type={type}
-        name={icon}
-        size={18}
-        color={color}
-      />
+      <AppIcon type={type} name={icon} size={18} color={color} />
     </View>
 
     <View style={{ flex: 1 }}>
-      <Text style={styles.notificationTitle}>
-        {title}
-      </Text>
+      <Text style={styles.notificationTitle}>{title}</Text>
 
-      <Text style={styles.notificationSubtitle}>
-        {subtitle}
-      </Text>
+      <Text style={styles.notificationSubtitle}>{subtitle}</Text>
     </View>
-
   </View>
 );
-
-
 
 /* ================= STYLES ================= */
 
 const styles = StyleSheet.create({
-
   container: {
     flex: 1,
-    backgroundColor: "#E2E8F0",
+    backgroundColor: '#E2E8F0',
   },
 
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    backgroundColor: "#1E293B",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    backgroundColor: '#1E293B',
     padding: 20,
     borderRadius: 16,
     margin: 16,
   },
 
   userRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   avatar: {
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#3B82F6",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#3B82F6',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 12,
   },
 
   userName: {
-    color: "white",
+    color: 'white',
     fontSize: 18,
     fontFamily: FONTS.SemiBold,
   },
 
   notificationSeparator: {
     height: 1,
-    backgroundColor: "#E2E8F0",
+    backgroundColor: '#E2E8F0',
     marginVertical: 12,
   },
 
   userLocation: {
-    color: "#94A3B8",
+    color: '#94A3B8',
     fontSize: 13,
     fontFamily: FONTS.Regular,
   },
 
   statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   onlineBadge: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#16A34A",
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#16A34A',
     paddingHorizontal: 12,
     paddingVertical: 6,
     borderRadius: 20,
@@ -460,12 +334,12 @@ const styles = StyleSheet.create({
     width: 6,
     height: 6,
     borderRadius: 3,
-    backgroundColor: "#fff",
+    backgroundColor: '#fff',
     marginRight: 6,
   },
 
   onlineText: {
-    color: "white",
+    color: 'white',
     fontSize: 12,
     fontFamily: FONTS.Medium,
   },
@@ -474,38 +348,38 @@ const styles = StyleSheet.create({
     width: 34,
     height: 34,
     borderRadius: 17,
-    backgroundColor: "#334155",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#334155',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 
   statsRow: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginHorizontal: 16,
   },
 
   progressTarget: {
-    color: "#64748B",
+    color: '#64748B',
     fontSize: 13,
     fontFamily: FONTS.Medium,
   },
 
   progressPercent: {
-    color: "#2563EB",
+    color: '#2563EB',
     fontSize: 13,
     fontFamily: FONTS.Bold,
   },
 
   statCard: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 12,
     marginHorizontal: 6,
   },
 
   statTitle: {
-    color: "#64748B",
+    color: '#64748B',
     fontSize: 12,
     fontFamily: FONTS.Medium,
   },
@@ -517,21 +391,21 @@ const styles = StyleSheet.create({
   },
 
   statSubtitle: {
-    color: "#475569",
+    color: '#475569',
     fontSize: 13,
     fontFamily: FONTS.Regular,
   },
 
   progressCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     margin: 16,
     padding: 16,
     borderRadius: 12,
   },
 
   progressHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
   },
 
   progressTitle: {
@@ -540,46 +414,46 @@ const styles = StyleSheet.create({
   },
 
   progressBadge: {
-    backgroundColor: "#BFDBFE",
+    backgroundColor: '#BFDBFE',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
   },
 
   progressBadgeText: {
-    color: "#1D4ED8",
+    color: '#1D4ED8',
     fontSize: 12,
     fontFamily: FONTS.Medium,
   },
 
   progressBarBackground: {
     height: 8,
-    backgroundColor: "#CBD5F5",
+    backgroundColor: '#CBD5F5',
     borderRadius: 6,
     marginTop: 12,
   },
 
   progressBarFill: {
-    width: "66%",
+    width: '66%',
     height: 8,
-    backgroundColor: "#2563EB",
+    backgroundColor: '#2563EB',
     borderRadius: 6,
   },
 
   progressFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
     marginTop: 8,
   },
 
   mainRow: {
-    flexDirection: isTablet ? "row" : "column",
+    flexDirection: isTablet ? 'row' : 'column',
     marginHorizontal: 16,
   },
 
   quickActionsCard: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 12,
     marginRight: 8,
@@ -587,7 +461,7 @@ const styles = StyleSheet.create({
 
   notificationsCard: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 12,
     marginLeft: 8,
@@ -601,27 +475,27 @@ const styles = StyleSheet.create({
   },
 
   quickGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
 
   quickCard: {
-    width: "48%",
-    backgroundColor: "#F1F5F9",
+    width: '48%',
+    backgroundColor: '#F1F5F9',
     padding: 16,
     borderRadius: 12,
     marginBottom: 12,
-    alignItems: "center",
+    alignItems: 'center',
   },
 
   quickIcon: {
     width: 40,
     height: 40,
     borderRadius: 20,
-    backgroundColor: "#DBEAFE",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#DBEAFE',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 8,
   },
 
@@ -631,7 +505,7 @@ const styles = StyleSheet.create({
   },
 
   notificationItem: {
-    flexDirection: "row",
+    flexDirection: 'row',
     marginBottom: 10,
   },
 
@@ -639,9 +513,9 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 18,
-    backgroundColor: "#F1F5F9",
-    justifyContent: "center",
-    alignItems: "center",
+    backgroundColor: '#F1F5F9',
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 10,
   },
 
@@ -651,47 +525,46 @@ const styles = StyleSheet.create({
   },
 
   notificationSubtitle: {
-    color: "#64748B",
+    color: '#64748B',
     fontSize: 12,
     fontFamily: FONTS.Regular,
   },
 
   aiCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: '#FFFFFF',
     margin: 16,
     padding: 16,
     borderRadius: 12,
   },
 
   aiHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
   },
 
   aiTitleRow: {
-    flexDirection: "row",
-    alignItems: "center",
+    flexDirection: 'row',
+    alignItems: 'center',
   },
 
   onlineBadgeSmall: {
-    backgroundColor: "#16A34A",
+    backgroundColor: '#16A34A',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
   },
 
   aiMessage: {
-    backgroundColor: "#DBEAFE",
+    backgroundColor: '#DBEAFE',
     padding: 12,
     borderRadius: 10,
     marginTop: 10,
   },
 
   aiMessageText: {
-    color: "#1E3A8A",
+    color: '#1E3A8A',
     fontSize: 13,
     fontFamily: FONTS.Regular,
   },
-
 });
