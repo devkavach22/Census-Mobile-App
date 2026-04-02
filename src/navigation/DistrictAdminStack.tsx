@@ -4,29 +4,17 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 /* ---------------- SCREENS ---------------- */
 
 import DistrictDashboardScreen from '../screens/districtAdmin/DistrictDashboardScreen';
-import EnumeratorListScreen from '../screens/districtAdmin/EnumeratorListScreen';
-import HouseholdReviewScreen from '../screens/districtAdmin/HouseholdReviewScreen';
-import FraudCasesScreen from '../screens/districtAdmin/FraudCasesScreen';
-import ReportsScreen from '../screens/superAdmin/ReportsScreen';
-import NotificationsScreen from '../screens/NotificationsScreen';
-import { commonHeaderOptions } from './CommonHeaderOptions';
+import StatePerformanceScreen from '../screens/superAdmin/StatePerformanceScreen';
+import NationalDashboardScreen from '../screens/superAdmin/NationalDashboardScreen';
 
 /* ---------------- STACK ---------------- */
 
 export type DistrictAdminStackParamList = {
   DistrictDashboard: undefined;
 
-  EnumeratorList: undefined;
+  StatePerformance: undefined;
 
-  HouseholdReview: {
-    enumeratorId?: string;
-  };
-
-  FraudCases: undefined;
-
-  Reports: undefined;
-
-  Notifications: undefined;
+  NationalDashboard: undefined;
 };
 
 const Stack = createNativeStackNavigator<DistrictAdminStackParamList>();
@@ -45,26 +33,15 @@ const DistrictAdminStack = () => {
         name="DistrictDashboard"
         component={DistrictDashboardScreen}
       />
+      <Stack.Screen
+        name="StatePerformance"
+        component={StatePerformanceScreen}
+      />
 
-      {/* ENUMERATOR LIST */}
-
-      <Stack.Screen name="EnumeratorList" component={EnumeratorListScreen} />
-
-      {/* HOUSEHOLD REVIEW */}
-
-      <Stack.Screen name="HouseholdReview" component={HouseholdReviewScreen} />
-
-      {/* FRAUD CASES */}
-
-      <Stack.Screen name="FraudCases" component={FraudCasesScreen} />
-
-      {/* REPORTS */}
-
-      <Stack.Screen name="Reports" component={ReportsScreen} />
-
-      {/* NOTIFICATIONS */}
-
-      <Stack.Screen name="Notifications" component={NotificationsScreen} />
+      <Stack.Screen
+        name="NationalDashboard"
+        component={NationalDashboardScreen}
+      />
     </Stack.Navigator>
   );
 };

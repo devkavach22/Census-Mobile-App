@@ -411,6 +411,7 @@ const styles = StyleSheet.create({
   roleSubtitle: {
     color: '#C0CAD8',
     fontSize: 13,
+    maxWidth: 200,
     fontFamily: FONTS.Regular,
   },
 

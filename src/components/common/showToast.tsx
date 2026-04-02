@@ -5,11 +5,11 @@ export const showToast = (message: string, type: MessageType = 'default') => {
     message: message,
     type: type,
     icon: 'default',
-    // Global styling to match your dashboard theme
     style: {
       borderRadius: 12,
       backgroundColor: '#0F172A',
       padding: 15,
+      bottom: 30,
       borderWidth: 1,
       borderColor: '#334155',
     },

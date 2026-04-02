@@ -1,112 +1,82 @@
-import React from "react";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import React from 'react';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 /* ---------------- SCREENS ---------------- */
 
-import NationalDashboardScreen from "../screens/superAdmin/NationalDashboardScreen";
-import StatePerformanceScreen from "../screens/superAdmin/StatePerformanceScreen";
-import DistrictPerformanceScreen from "../screens/superAdmin/DistrictPerformanceScreen";
-import FraudAnalyticsScreen from "../screens/superAdmin/FraudAnalyticsScreen";
-import ReportsScreen from "../screens/superAdmin/ReportsScreen";
-import UserManagementScreen from "../screens/superAdmin/UserManagementScreen";
-import { commonHeaderOptions } from "./CommonHeaderOptions";
+import NationalDashboardScreen from '../screens/superAdmin/NationalDashboardScreen';
+import StatePerformanceScreen from '../screens/superAdmin/StatePerformanceScreen';
+import DistrictPerformanceScreen from '../screens/superAdmin/DistrictPerformanceScreen';
+import FraudAnalyticsScreen from '../screens/superAdmin/FraudAnalyticsScreen';
+import ReportsScreen from '../screens/superAdmin/ReportsScreen';
+import UserManagementScreen from '../screens/superAdmin/UserManagementScreen';
+import { commonHeaderOptions } from './CommonHeaderOptions';
 
 /* ---------------- PARAM TYPES ---------------- */
 
 export type SuperAdminStackParamList = {
+  NationalDashboard: undefined;
 
-    NationalDashboard: undefined;
+  StatePerformance: {
+    stateId?: string;
+  };
 
-    StatePerformance: {
-        stateId?: string;
-    };
+  DistrictPerformance: {
+    districtId?: string;
+  };
 
-    DistrictPerformance: {
-        districtId?: string;
-    };
+  FraudAnalytics: undefined;
 
-    FraudAnalytics: undefined;
+  Reports: undefined;
 
-    Reports: undefined;
-
-    UserManagement: undefined;
-
+  UserManagement: undefined;
 };
 
-const Stack =
-    createNativeStackNavigator<
-        SuperAdminStackParamList
-    >();
+const Stack = createNativeStackNavigator<SuperAdminStackParamList>();
 
 /* ---------------- STACK ---------------- */
 
 const SuperAdminStack = () => {
+  return (
+    <Stack.Navigator
+      initialRouteName="NationalDashboard"
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
+      {/* NATIONAL DASHBOARD */}
 
-    return (
+      <Stack.Screen
+        name="NationalDashboard"
+        component={NationalDashboardScreen}
+      />
 
-        <Stack.Navigator
-            initialRouteName="NationalDashboard"
-            screenOptions={commonHeaderOptions}
-        >
+      {/* STATE PERFORMANCE */}
 
-            {/* NATIONAL DASHBOARD */}
+      <Stack.Screen
+        name="StatePerformance"
+        component={StatePerformanceScreen}
+      />
 
-            <Stack.Screen
-                name="NationalDashboard"
-                component={
-                    NationalDashboardScreen
-                }
-            />
+      {/* DISTRICT PERFORMANCE */}
 
-            {/* STATE PERFORMANCE */}
+      <Stack.Screen
+        name="DistrictPerformance"
+        component={DistrictPerformanceScreen}
+      />
 
-            <Stack.Screen
-                name="StatePerformance"
-                component={
-                    StatePerformanceScreen
-                }
-            />
+      {/* FRAUD ANALYTICS */}
 
-            {/* DISTRICT PERFORMANCE */}
+      <Stack.Screen name="FraudAnalytics" component={FraudAnalyticsScreen} />
 
-            <Stack.Screen
-                name="DistrictPerformance"
-                component={
-                    DistrictPerformanceScreen
-                }
-            />
+      {/* REPORTS */}
 
-            {/* FRAUD ANALYTICS */}
+      <Stack.Screen name="Reports" component={ReportsScreen} />
 
-            <Stack.Screen
-                name="FraudAnalytics"
-                component={
-                    FraudAnalyticsScreen
-                }
-            />
+      {/* USER MANAGEMENT */}
 
-            {/* REPORTS */}
-
-            <Stack.Screen
-                name="Reports"
-                component={
-                    ReportsScreen
-                }
-            />
-
-            {/* USER MANAGEMENT */}
-
-            <Stack.Screen
-                name="UserManagement"
-                component={
-                    UserManagementScreen
-                }
-            />
-
-        </Stack.Navigator>
-
-    );
-
+      <Stack.Screen name="UserManagement" component={UserManagementScreen} />
+    </Stack.Navigator>
+  );
 };
 
 export default SuperAdminStack;
