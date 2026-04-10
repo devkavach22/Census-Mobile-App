@@ -50,9 +50,7 @@ const Login = () => {
   const [showTimer, setShowTimer] = useState(false);
   const [timer, setTimer] = useState(60);
   const timerRef = useRef<any>(null);
-  const { error, success, loading, isLogin } = useSelector(
-    (state: any) => state.common,
-  );
+  const { isLogin } = useSelector((state: any) => state.common);
 
   const ROLE_MAP: any = {
     Enumerator: 'enumerator',
@@ -74,7 +72,6 @@ const Login = () => {
       setStorageData(STORAGE_KEYS.LOGIN_DATA, loginData);
       setUserRole(systemRole);
       setIsLoggedIn(true);
-    
     }
   }, [isLogin]);
 
@@ -91,18 +88,6 @@ const Login = () => {
       }
     };
   }, []);
-
-  /* ✅ OTP FOCUS FIX */
-  useEffect(() => {
-    const started = otp.some(v => v !== '');
-
-    if (started) {
-      mobileRef.current?.blur();
-      requestAnimationFrame(() => {
-        inputs.current[focusedIndex]?.focus();
-      });
-    }
-  }, [otp, focusedIndex]);
 
   /* ---------------- ROLE ITEM ---------------- */
   const RoleItem = ({ title, subtitle, icon }: any) => {
@@ -137,34 +122,25 @@ const Login = () => {
     inputs,
     focusedIndex,
     setFocusedIndex,
-    mobileRef,
   }: OtpBoxProps) => {
     const handleChange = (text: string, index: number) => {
       if (!/^[0-9]?$/.test(text)) return;
-
-      mobileRef.current?.blur();
 
       const newOtp = [...otp];
       newOtp[index] = text;
       setOtp(newOtp);
 
+      // Move forward
       if (text && index < otp.length - 1) {
-        const next = index + 1;
-        setFocusedIndex(next);
-        requestAnimationFrame(() => {
-          inputs.current[next]?.focus();
-        });
+        inputs.current[index + 1]?.focus();
       }
     };
 
     const handleKeyPress = (key: string, index: number) => {
-      if (key === 'Backspace' && !otp[index] && index > 0) {
-        const prev = index - 1;
-        setFocusedIndex(prev);
-
-        requestAnimationFrame(() => {
-          inputs.current[prev]?.focus();
-        });
+      if (key === 'Backspace') {
+        if (otp[index] === '' && index > 0) {
+          inputs.current[index - 1]?.focus();
+        }
       }
     };
 
@@ -182,7 +158,6 @@ const Login = () => {
             maxLength={1}
             value={digit}
             textAlign="center"
-            blurOnSubmit={false}
             onFocus={() => setFocusedIndex(index)}
             onChangeText={text => handleChange(text, index)}
             onKeyPress={({ nativeEvent }) =>
@@ -246,43 +221,60 @@ const Login = () => {
   };
 
   const handleSendOtp = async () => {
-    if (mobile.length !== 10) {
-      showMessage({
-        message: 'Please enter a valid 10-digit mobile number',
-        type: 'danger',
-      });
-      return;
-    }
-
-    const loginData = {
-      mobile: mobile,
-      user_type: ROLE_MAP[selectedRole],
-    };
-
-    console.log('Sending OTP...', loginData);
-
-    const result = await dispatch(LoginWithSendOtpApi(loginData)).unwrap();
-    console.log('OTP sent successfully:', result);
-    if (result?.status === 'success') {
-      setShowTimer(true);
-      setTimer(60);
-
-      // clear old timer
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
+    try {
+      if (mobile.length !== 10) {
+        showMessage({
+          message: 'Please enter a valid 10-digit mobile number',
+          type: 'danger',
+        });
+        return;
       }
 
-      // start new timer
-      timerRef.current = setInterval(() => {
-        setTimer(prev => {
-          if (prev <= 1) {
-            clearInterval(timerRef.current!);
-            setShowTimer(false);
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+      const loginData = {
+        mobile: mobile,
+        user_type: ROLE_MAP[selectedRole],
+      };
+
+      console.log('Sending OTP...', loginData);
+
+      const result = await dispatch(LoginWithSendOtpApi(loginData)).unwrap();
+
+      console.log('OTP sent successfully:', result);
+
+      if (result?.status === 'success') {
+        setShowTimer(true);
+        setTimer(60);
+
+        // ✅ Clear old timer safely
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
+        }
+
+        // ✅ Start timer
+        timerRef.current = setInterval(() => {
+          setTimer(prev => {
+            if (prev <= 1) {
+              clearInterval(timerRef.current);
+              timerRef.current = null; // important
+              setShowTimer(false);
+              return 0;
+            }
+            return prev - 1;
+          });
+        }, 1000);
+
+        // ✅ Focus first OTP box
+        setTimeout(() => {
+          inputs.current[0]?.focus();
+        }, 300);
+      }
+    } catch (error: any) {
+      console.log('OTP Error:', error);
+
+      showMessage({
+        message: error?.message || 'Failed to send OTP',
+        type: 'danger',
+      });
     }
   };
 
