@@ -15,15 +15,30 @@ import { useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FONTS } from '../../theme/fonts';
 import { showToast } from '../../components/common/showToast';
+import { updateState } from '../../store/slices/commonSlice';
+import { useAppDispatch } from '../../store/hooks';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 600;
 
 const EnumeratorDashboard = () => {
   const Navigation = useNavigation();
   const { userRole, setIsLoggedIn } = useContext(AuthContext);
+  const dispatch = useAppDispatch();
 
   const logOut = async () => {
+    // 1. Clear storage
     await removeStorageData(STORAGE_KEYS.LOGIN_DATA);
+
+    // 2. Reset Redux state
+    dispatch(
+      updateState({
+        isLogin: false,
+        token: null,
+        userData: null,
+      }),
+    );
+
+    // 3. Reset context
     setIsLoggedIn(false);
   };
   return (

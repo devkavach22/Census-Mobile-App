@@ -7,26 +7,48 @@ import DeviceInfo from 'react-native-device-info';
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
-import FlashMessage from 'react-native-flash-message';
+import FlashMessage, { showMessage } from 'react-native-flash-message';
 
 import AuthStack from './src/navigation/AuthStack';
 
 import { getStorageData, STORAGE_KEYS } from './src/utils/storage';
 import RoleBasedStack from './src/navigation/RoleBasedStack';
 import Orientation from 'react-native-orientation-locker';
+import { Provider, useDispatch, useSelector } from 'react-redux';
+import { store } from './src/store';
+import {
+  clearError,
+  clearSuccess,
+  updateState,
+} from './src/store/slices/commonSlice';
+import CommonLoader from './src/components/CommonLoader';
+import { showToast } from './src/components/common/showToast';
 
 export const AuthContext = createContext<any>(null);
 
-const App = () => {
+const AppWrapper = () => {
   const { width, height } = Dimensions.get('window');
-
   const isLargeScreen = Math.min(width, height) >= 600;
-
   const isTablet = DeviceInfo.isTablet() && isLargeScreen;
-
   const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-
   const [userRole, setUserRole] = useState<string | null>(null);
+  const dispatch = useDispatch();
+
+  const { error, success, loading } = useSelector((state: any) => state.common);
+
+  useEffect(() => {
+    if (error) {
+      showToast(error, 'danger');
+      dispatch(clearError());
+    }
+  }, [error]);
+
+  useEffect(() => {
+    if (success) {
+      showToast(success, 'success');
+      dispatch(clearSuccess());
+    }
+  }, [success]);
 
   /* ---------------- CHECK LOGIN ---------------- */
   useEffect(() => {
@@ -44,8 +66,10 @@ const App = () => {
 
         if (data?.isLoggedIn) {
           setIsLoggedIn(true);
+         
         } else {
           setIsLoggedIn(false);
+        
         }
 
         if (data?.role) {
@@ -54,6 +78,7 @@ const App = () => {
           setUserRole(null);
         }
       } catch (error) {
+        dispatch(updateState({ isLogin: false }));
         setIsLoggedIn(false);
       }
     };
@@ -95,7 +120,7 @@ const App = () => {
         <NavigationContainer>
           {isLoggedIn ? <RoleBasedStack /> : <AuthStack />}
         </NavigationContainer>
-
+        {loading && <CommonLoader visible={loading} />}
         <FlashMessage
           position="bottom"
           floating
@@ -103,6 +128,14 @@ const App = () => {
         />
       </SafeAreaProvider>
     </AuthContext.Provider>
+  );
+};
+
+const App = () => {
+  return (
+    <Provider store={store}>
+      <AppWrapper />
+    </Provider>
   );
 };
 
@@ -139,6 +172,3 @@ const styles = StyleSheet.create({
   },
 });
 
-function removeStorageData(LOGIN_DATA: string) {
-  throw new Error('Function not implemented.');
-}

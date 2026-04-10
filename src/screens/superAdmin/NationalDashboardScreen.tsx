@@ -12,6 +12,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import AppIcon from '../../components/common/AppIcon';
 import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
 import { AuthContext } from '../../../App';
+import { updateState } from '../../store/slices/commonSlice';
+import { useAppDispatch } from '../../store/hooks';
 
 // --- DATA CONSTANTS ---
 const COLORS = {
@@ -176,8 +178,22 @@ const IndiaGridMap = () => {
 const NationalDashboardScreen = () => {
   const navigation = useNavigation<any>();
   const { userRole, setIsLoggedIn } = useContext(AuthContext);
+  const dispatch = useAppDispatch();
+
   const logOut = async () => {
+    // 1. Clear storage
     await removeStorageData(STORAGE_KEYS.LOGIN_DATA);
+
+    // 2. Reset Redux state
+    dispatch(
+      updateState({
+        isLogin: false,
+        token: null,
+        userData: null,
+      }),
+    );
+
+    // 3. Reset context
     setIsLoggedIn(false);
   };
   return (
@@ -381,7 +397,9 @@ const NationalDashboardScreen = () => {
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={styles.btnEscalate}
-                  onPress={() => showToast('🚨 Escalation sent to 7 high-risk state DMs')}
+                  onPress={() =>
+                    showToast('🚨 Escalation sent to 7 high-risk state DMs')
+                  }
                 >
                   <Text style={styles.btnEscalateText}>🚨 Escalate</Text>
                 </TouchableOpacity>

@@ -9,44 +9,88 @@ import {
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppIcon from '../components/common/AppIcon';
-import { useNavigation } from '@react-navigation/native';
-import { showMessage } from 'react-native-flash-message';
 import { FONTS } from '../theme/fonts';
 import KeyboardWrapper from '../components/KeyboardWrapper';
 import { setStorageData, STORAGE_KEYS } from '../utils/storage';
 import { AuthContext } from '../../App';
 import { showToast } from '../components/common/showToast';
+import {
+  LoginWithAadhaarApi,
+  LoginWithPasswordApi,
+  LoginWithSendOtpApi,
+  LoginWithVerifyOtpApi,
+} from '../store/slices/commonSlice';
+import { useAppDispatch } from '../store/hooks';
+import { showMessage } from 'react-native-flash-message';
+import { useSelector } from 'react-redux';
 
 const { width } = Dimensions.get('window');
 
 type OtpBoxProps = {
   otp: string[];
   setOtp: (val: string[]) => void;
-  inputs: React.MutableRefObject<Array<TextInput | null>>;
+  inputs: any;
   focusedIndex: number;
   setFocusedIndex: (i: number) => void;
-  mobileRef: React.MutableRefObject<TextInput | null>;
+  mobileRef: any;
 };
 
 const Login = () => {
   const { setIsLoggedIn, setUserRole } = useContext(AuthContext);
   const [selectedRole, setSelectedRole] = useState('Enumerator');
   const [mobile, setMobile] = useState('');
-
+  const [password, setPassword] = useState('');
+  const [aadhaar, setAadhaar] = useState('');
   const inputs = useRef<Array<TextInput | null>>([]);
   const mobileRef = useRef<TextInput | null>(null);
-
-  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [otp, setOtp] = useState(['', '', '', '']);
   const [focusedIndex, setFocusedIndex] = useState<any>(null);
   const [loginType, setLoginType] = useState('OTP');
+  const dispatch = useAppDispatch();
+  const [showTimer, setShowTimer] = useState(false);
+  const [timer, setTimer] = useState(60);
+  const timerRef = useRef<any>(null);
+  const { error, success, loading, isLogin } = useSelector(
+    (state: any) => state.common,
+  );
 
   const ROLE_MAP: any = {
-    Enumerator: 'ENUMERATOR',
-
-    'District Admin': 'DISTRICT_ADMIN',
-
-    'Super Admin': 'SUPER_ADMIN',
+    Enumerator: 'enumerator',
+    'District Admin': 'district_admin',
+    'Super Admin': 'super_admin',
   };
+
+  useEffect(() => {
+    if (isLogin) {
+      const systemRole = ROLE_MAP[selectedRole];
+
+      const loginData = {
+        mobile,
+        role: systemRole,
+        loginType,
+        isLoggedIn: true,
+      };
+
+      setStorageData(STORAGE_KEYS.LOGIN_DATA, loginData);
+      setUserRole(systemRole);
+      setIsLoggedIn(true);
+    
+    }
+  }, [isLogin]);
+
+  useEffect(() => {
+    if (mobile.length === 10 && loginType === 'OTP') {
+      handleSendOtp();
+    }
+  }, [mobile]);
+
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    };
+  }, []);
 
   /* ✅ OTP FOCUS FIX */
   useEffect(() => {
@@ -54,7 +98,6 @@ const Login = () => {
 
     if (started) {
       mobileRef.current?.blur();
-
       requestAnimationFrame(() => {
         inputs.current[focusedIndex]?.focus();
       });
@@ -67,6 +110,7 @@ const Login = () => {
 
     return (
       <TouchableOpacity
+        disabled={showTimer}
         style={[styles.roleCard, selected && styles.roleSelected]}
         onPress={() => setSelectedRole(title)}
       >
@@ -107,7 +151,6 @@ const Login = () => {
       if (text && index < otp.length - 1) {
         const next = index + 1;
         setFocusedIndex(next);
-
         requestAnimationFrame(() => {
           inputs.current[next]?.focus();
         });
@@ -154,24 +197,93 @@ const Login = () => {
   /* ---------------- LOGIN ---------------- */
 
   const handleLogin = async () => {
-    const systemRole = ROLE_MAP[selectedRole];
+    if (loginType === 'OTP') {
+      if (otp.some(v => v === '')) {
+        showToast('Please enter the complete OTP', 'danger');
+        return;
+      }
+      const loginData = {
+        mobile: mobile,
+        otp: otp.join(''),
+        user_type: ROLE_MAP[selectedRole],
+      };
+      await dispatch(LoginWithVerifyOtpApi(loginData));
+    }
+
+    if (loginType === 'PASSWORD') {
+      if (!mobile || mobile.length !== 10) {
+        showToast('Please enter a valid 10-digit mobile number', 'danger');
+        return;
+      }
+      if (!password) {
+        showToast('Please enter your password', 'danger');
+        return;
+      }
+      const loginData = {
+        mobile: mobile,
+        password: password,
+        user_type: ROLE_MAP[selectedRole],
+      };
+      await dispatch(LoginWithPasswordApi(loginData));
+    }
+
+    if (loginType === 'AADHAAR') {
+      if (!mobile || mobile.length !== 10) {
+        showToast('Please enter a valid 10-digit mobile number', 'danger');
+        return;
+      }
+      if (!aadhaar || aadhaar.length !== 12) {
+        showToast('Please enter a valid 12-digit Aadhaar number', 'danger');
+        return;
+      }
+      const loginData = {
+        mobile: mobile,
+        aadhaar: aadhaar,
+        user_type: ROLE_MAP[selectedRole],
+      };
+      await dispatch(LoginWithAadhaarApi(loginData));
+    }
+  };
+
+  const handleSendOtp = async () => {
+    if (mobile.length !== 10) {
+      showMessage({
+        message: 'Please enter a valid 10-digit mobile number',
+        type: 'danger',
+      });
+      return;
+    }
 
     const loginData = {
-      mobile,
-      role: systemRole,
-      loginType,
-      isLoggedIn: true,
+      mobile: mobile,
+      user_type: ROLE_MAP[selectedRole],
     };
 
-    /* ✅ SAVE LOGIN DATA */
+    console.log('Sending OTP...', loginData);
 
-    await setStorageData(STORAGE_KEYS.LOGIN_DATA, loginData);
-    showToast('Login successful!, Redirecting...');
-    setUserRole(systemRole);
+    const result = await dispatch(LoginWithSendOtpApi(loginData)).unwrap();
+    console.log('OTP sent successfully:', result);
+    if (result?.status === 'success') {
+      setShowTimer(true);
+      setTimer(60);
 
-    setTimeout(() => {
-      setIsLoggedIn(true);
-    }, 1500);
+      // clear old timer
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+
+      // start new timer
+      timerRef.current = setInterval(() => {
+        setTimer(prev => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current!);
+            setShowTimer(false);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
   };
 
   return (
@@ -219,8 +331,11 @@ const Login = () => {
           <View style={styles.tabRow}>
             {/* OTP TAB */}
             <TouchableOpacity
+              disabled={showTimer}
               style={loginType === 'OTP' ? styles.activeTab : styles.tab}
-              onPress={() => setLoginType('OTP')}
+              onPress={() => {
+                setLoginType('OTP'), setMobile('');
+              }}
             >
               <AppIcon type="Feather" name="smartphone" size={18} />
               <Text
@@ -234,8 +349,11 @@ const Login = () => {
 
             {/* PASSWORD TAB */}
             <TouchableOpacity
+              disabled={showTimer}
               style={loginType === 'PASSWORD' ? styles.activeTab : styles.tab}
-              onPress={() => setLoginType('PASSWORD')}
+              onPress={() => {
+                setLoginType('PASSWORD'), setMobile('');
+              }}
             >
               <AppIcon type="Feather" name="key" size={18} />
               <Text
@@ -251,8 +369,11 @@ const Login = () => {
 
             {/* AADHAAR TAB */}
             <TouchableOpacity
+              disabled={showTimer}
               style={loginType === 'AADHAAR' ? styles.activeTab : styles.tab}
-              onPress={() => setLoginType('AADHAAR')}
+              onPress={() => {
+                setLoginType('AADHAAR'), setMobile('');
+              }}
             >
               <AppIcon name="badge" size={18} color="#7B3FE4" />
               <Text
@@ -273,6 +394,7 @@ const Login = () => {
             ref={mobileRef}
             placeholder="+91 9XXXXXXXXX"
             value={mobile}
+            editable={!showTimer}
             onChangeText={text => setMobile(text.replace(/[^0-9]/g, ''))}
             style={styles.input}
             keyboardType="phone-pad"
@@ -281,18 +403,40 @@ const Login = () => {
 
           {/* OTP LOGIN */}
           {loginType === 'OTP' && (
-            <>
-              <Text style={styles.label}>Enter OTP</Text>
-
-              <OtpBox
-                otp={otp}
-                setOtp={setOtp}
-                inputs={inputs}
-                focusedIndex={focusedIndex}
-                setFocusedIndex={setFocusedIndex}
-                mobileRef={mobileRef}
-              />
-            </>
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+              }}
+            >
+              <View>
+                <Text style={styles.label}>Enter OTP</Text>
+                <OtpBox
+                  otp={otp}
+                  setOtp={setOtp}
+                  inputs={inputs}
+                  focusedIndex={focusedIndex}
+                  setFocusedIndex={setFocusedIndex}
+                  mobileRef={mobileRef}
+                />
+              </View>
+              {showTimer ? (
+                <Text
+                  style={{ color: '#6B7280', fontSize: 14, paddingRight: 20 }}
+                >
+                  Resend in {timer}s
+                </Text>
+              ) : (
+                <TouchableOpacity onPress={handleSendOtp}>
+                  <Text
+                    style={{ color: '#2563EB', fontSize: 14, paddingRight: 20 }}
+                  >
+                    Resend OTP
+                  </Text>
+                </TouchableOpacity>
+              )}
+            </View>
           )}
 
           {/* PASSWORD LOGIN */}
@@ -301,9 +445,11 @@ const Login = () => {
               <Text style={styles.label}>Enter Password</Text>
 
               <TextInput
+                value={password}
                 placeholder="Enter password"
                 secureTextEntry
                 style={styles.input}
+                onChangeText={text => setPassword(text)}
               />
             </>
           )}
@@ -312,8 +458,9 @@ const Login = () => {
           {loginType === 'AADHAAR' && (
             <>
               <Text style={styles.label}>Enter Aadhaar</Text>
-
               <TextInput
+                value={aadhaar}
+                onChangeText={text => setAadhaar(text)}
                 placeholder="XXXX XXXX XXXX"
                 keyboardType="number-pad"
                 maxLength={12}

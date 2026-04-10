@@ -11,9 +11,7 @@ import NationalDashboardScreen from '../screens/superAdmin/NationalDashboardScre
 
 export type DistrictAdminStackParamList = {
   DistrictDashboard: undefined;
-
   StatePerformance: undefined;
-
   NationalDashboard: undefined;
 };
 

@@ -16,9 +16,12 @@ import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
 import CustomDropdown from '../../components/common/CustomDropdown';
 import { showToast } from '../../components/common/showToast';
 import { useNavigation } from '@react-navigation/native';
+import { updateState } from '../../store/slices/commonSlice';
+import { useAppDispatch } from '../../store/hooks';
 
 const DistrictDashboardScreen = () => {
   const { setIsLoggedIn } = useContext(AuthContext);
+  const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
 
   // Animation controller for Heatmap and Custom Elements
@@ -34,7 +37,19 @@ const DistrictDashboardScreen = () => {
   }, []);
 
   const logOut = async () => {
+    // 1. Clear storage
     await removeStorageData(STORAGE_KEYS.LOGIN_DATA);
+
+    // 2. Reset Redux state
+    dispatch(
+      updateState({
+        isLogin: false,
+        token: null,
+        userData: null,
+      }),
+    );
+
+    // 3. Reset context
     setIsLoggedIn(false);
   };
 
