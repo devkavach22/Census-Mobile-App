@@ -466,7 +466,7 @@ const Login = () => {
             <Text style={styles.loginText}> Secure Login</Text>
           </TouchableOpacity>
 
-          <Text style={styles.forgot}>Forgot password / User ID?</Text>
+          <Text style={styles.forgot}>Forgot password?</Text>
         </View>
       </SafeAreaView>
     </KeyboardWrapper>
@@ -684,7 +684,7 @@ const styles = StyleSheet.create({
   loginText: {
     color: '#FFF',
     fontSize: 16,
-    fontFamily: FONTS.SemiBold,
+    fontFamily: FONTS.Bold,
     marginLeft: 8,
   },
 
@@ -692,7 +692,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 18,
     color: '#2563EB',
-    fontSize: 14,
+    fontSize: 16,
     fontFamily: FONTS.Medium,
   },
 });
