@@ -1,7 +1,7 @@
 import { showMessage, MessageType } from 'react-native-flash-message';
 import { COLORS } from '../../theme/colors';
 
-export const showToast = (message: string, type: MessageType = 'default') => {
+export const showToast = (message: string, type: MessageType = 'success') => {
   showMessage({
     message: message,
     type: type,

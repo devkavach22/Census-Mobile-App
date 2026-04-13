@@ -20,7 +20,7 @@ import { updateState } from '../../store/slices/commonSlice';
 import { useAppDispatch } from '../../store/hooks';
 
 const DistrictDashboardScreen = () => {
-  const { setIsLoggedIn } = useContext(AuthContext);
+  const { setUserDetails } = useContext(AuthContext);
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
 
@@ -50,7 +50,7 @@ const DistrictDashboardScreen = () => {
     );
 
     // 3. Reset context
-    setIsLoggedIn(false);
+    setUserDetails(null);
   };
 
   const barData = [

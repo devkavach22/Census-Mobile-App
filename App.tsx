@@ -30,8 +30,7 @@ const AppWrapper = () => {
   const { width, height } = Dimensions.get('window');
   const isLargeScreen = Math.min(width, height) >= 600;
   const isTablet = DeviceInfo.isTablet() && isLargeScreen;
-  const [isLoggedIn, setIsLoggedIn] = useState<boolean | null>(null);
-  const [userRole, setUserRole] = useState<string | null>(null);
+  const [userDetails, setUserDetails] = useState<any>(null);
   const dispatch = useDispatch();
 
   const { error, success, loading } = useSelector((state: any) => state.common);
@@ -62,35 +61,19 @@ const AppWrapper = () => {
     const checkLogin = async () => {
       try {
         const data = await getStorageData(STORAGE_KEYS.LOGIN_DATA);
-        console.log('Login Data:', data);
-
+      
         if (data?.isLoggedIn) {
-          setIsLoggedIn(true);
-         
+          setUserDetails(data);
         } else {
-          setIsLoggedIn(false);
-        
-        }
-
-        if (data?.role) {
-          setUserRole(data.role);
-        } else {
-          setUserRole(null);
+          setUserDetails(null);
         }
       } catch (error) {
         dispatch(updateState({ isLogin: false }));
-        setIsLoggedIn(false);
+        setUserDetails(null);
       }
     };
-
     checkLogin();
-  }, [isLoggedIn]);
-
-  /* ---------------- LOADING STATE ---------------- */
-
-  if (isLoggedIn === null) {
-    return null; // later splash screen add here
-  }
+  }, []);
 
   /* ---------------- TABLET CHECK ---------------- */
 
@@ -110,15 +93,13 @@ const AppWrapper = () => {
   return (
     <AuthContext.Provider
       value={{
-        isLoggedIn,
-        setIsLoggedIn,
-        userRole,
-        setUserRole,
+        userDetails,
+        setUserDetails,
       }}
     >
       <SafeAreaProvider>
         <NavigationContainer>
-          {isLoggedIn ? <RoleBasedStack /> : <AuthStack />}
+          {userDetails ? <RoleBasedStack /> : <AuthStack />}
         </NavigationContainer>
         {loading && <CommonLoader visible={loading} />}
         <FlashMessage
@@ -171,4 +152,3 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
-

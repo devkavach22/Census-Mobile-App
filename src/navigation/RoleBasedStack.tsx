@@ -16,17 +16,17 @@ import AuthStack from './AuthStack';
 export const USER_ROLES = {
   ENUMERATOR: 'enumerator',
   DISTRICT_ADMIN: 'district_admin',
-  SUPER_ADMIN: 'super_admin',
+  SUPER_ADMIN: 'national_admin',
 };
 
 /* ---------------- ROLE BASED STACK ---------------- */
 
 const RoleBasedStack = () => {
-  const { userRole } = useContext(AuthContext);
+  const { userDetails } = useContext(AuthContext);
 
   /* ---------------- SWITCH ROLE ---------------- */
-  console.log('User Role in RoleBasedStack:', userRole);
-  switch (userRole) {
+  console.log('User Role in RoleBasedStack:', userDetails);
+  switch (userDetails?.role) {
     case USER_ROLES.ENUMERATOR:
       return <EnumeratorStack />;
 

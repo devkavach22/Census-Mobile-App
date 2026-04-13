@@ -4,6 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export const STORAGE_KEYS = {
     LOGIN_DATA: "LOGIN_DATA",
+    TOKEN: "TOKEN",
 };
 
 /* ---------------- SAVE DATA ---------------- */

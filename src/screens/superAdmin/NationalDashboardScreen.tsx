@@ -177,7 +177,7 @@ const IndiaGridMap = () => {
 // --- MAIN SCREEN ---
 const NationalDashboardScreen = () => {
   const navigation = useNavigation<any>();
-  const { userRole, setIsLoggedIn } = useContext(AuthContext);
+  const { setUserDetails } = useContext(AuthContext);
   const dispatch = useAppDispatch();
 
   const logOut = async () => {
@@ -192,9 +192,7 @@ const NationalDashboardScreen = () => {
         userData: null,
       }),
     );
-
-    // 3. Reset context
-    setIsLoggedIn(false);
+    setUserDetails(null);
   };
   return (
     <SafeAreaView style={styles.safeArea}>

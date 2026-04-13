@@ -36,7 +36,7 @@ type OtpBoxProps = {
 };
 
 const Login = () => {
-  const { setIsLoggedIn, setUserRole } = useContext(AuthContext);
+  const { setUserDetails } = useContext(AuthContext);
   const [selectedRole, setSelectedRole] = useState('Enumerator');
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
@@ -50,28 +50,28 @@ const Login = () => {
   const [showTimer, setShowTimer] = useState(false);
   const [timer, setTimer] = useState(60);
   const timerRef = useRef<any>(null);
-  const { isLogin } = useSelector((state: any) => state.common);
+  const { isLogin, userData } = useSelector((state: any) => state.common);
 
   const ROLE_MAP: any = {
     Enumerator: 'enumerator',
     'District Admin': 'district_admin',
-    'Super Admin': 'super_admin',
+    'Super Admin': 'national_admin',
   };
 
   useEffect(() => {
     if (isLogin) {
-      const systemRole = ROLE_MAP[selectedRole];
-
       const loginData = {
-        mobile,
-        role: systemRole,
-        loginType,
+        name: userData.name,
+        userId: userData.user_id,
+        district: userData?.district,
+        state: userData?.state,
+        role: userData?.user_type,
+        loginType: userData?.login_type,
+        mobile: userData?.mobile,
         isLoggedIn: true,
       };
-
       setStorageData(STORAGE_KEYS.LOGIN_DATA, loginData);
-      setUserRole(systemRole);
-      setIsLoggedIn(true);
+      setUserDetails(loginData);
     }
   }, [isLogin]);
 

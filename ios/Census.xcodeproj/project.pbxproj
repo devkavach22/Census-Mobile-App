@@ -9,16 +9,17 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-Census.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-Census.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		19377CE16C974A9AB9ABD105 /* InterRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 66A0C74A228C4128A2FA2C86 /* InterRegular.ttf */; };
+		1EEB250D408F4E5DAB59DB62 /* InterMedium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 016C75B893EC4F3C925B4AD9 /* InterMedium.ttf */; };
+		229D2AED8B7B4F77A2670713 /* InterSemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EDA220A6D4F4B31B0C2E231 /* InterSemiBold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
 		BEAEAB1EA307A0198CE6C331 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
-		1EEB250D408F4E5DAB59DB62 /* InterMedium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 016C75B893EC4F3C925B4AD9 /* InterMedium.ttf */; };
-		229D2AED8B7B4F77A2670713 /* InterSemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 6EDA220A6D4F4B31B0C2E231 /* InterSemiBold.ttf */; };
-		19377CE16C974A9AB9ABD105 /* InterRegular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 66A0C74A228C4128A2FA2C86 /* InterRegular.ttf */; };
 		D2C4245027884831B8AC5C1C /* InterBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 855FDC5F52FC4F2EB1598178 /* InterBold.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		016C75B893EC4F3C925B4AD9 /* InterMedium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = InterMedium.ttf; path = ../src/assets/fonts/InterMedium.ttf; sourceTree = "<group>"; };
 		13B07F961A680F5B00A75B9A /* Census.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Census.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = Census/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = Census/Info.plist; sourceTree = "<group>"; };
@@ -26,13 +27,12 @@
 		3B4392A12AC88292D35C810B /* Pods-Census.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Census.debug.xcconfig"; path = "Target Support Files/Pods-Census/Pods-Census.debug.xcconfig"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-Census.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Census.release.xcconfig"; path = "Target Support Files/Pods-Census/Pods-Census.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-Census.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-Census.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		66A0C74A228C4128A2FA2C86 /* InterRegular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = InterRegular.ttf; path = ../src/assets/fonts/InterRegular.ttf; sourceTree = "<group>"; };
+		6EDA220A6D4F4B31B0C2E231 /* InterSemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = InterSemiBold.ttf; path = ../src/assets/fonts/InterSemiBold.ttf; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = Census/AppDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = Census/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		855FDC5F52FC4F2EB1598178 /* InterBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = InterBold.ttf; path = ../src/assets/fonts/InterBold.ttf; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
-		016C75B893EC4F3C925B4AD9 /* InterMedium.ttf */ = {isa = PBXFileReference; name = "InterMedium.ttf"; path = "../src/assets/fonts/InterMedium.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		6EDA220A6D4F4B31B0C2E231 /* InterSemiBold.ttf */ = {isa = PBXFileReference; name = "InterSemiBold.ttf"; path = "../src/assets/fonts/InterSemiBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		66A0C74A228C4128A2FA2C86 /* InterRegular.ttf */ = {isa = PBXFileReference; name = "InterRegular.ttf"; path = "../src/assets/fonts/InterRegular.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
-		855FDC5F52FC4F2EB1598178 /* InterBold.ttf */ = {isa = PBXFileReference; name = "InterBold.ttf"; path = "../src/assets/fonts/InterBold.ttf"; sourceTree = "<group>"; fileEncoding = undefined; lastKnownFileType = unknown; explicitFileType = undefined; includeInIndex = 0; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */

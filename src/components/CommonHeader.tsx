@@ -24,7 +24,7 @@ const CommonHeader: React.FC<HeaderProps> = ({
 }) => {
   const navigation = useNavigation();
   const dispatch = useAppDispatch();
-  const { userRole, setIsLoggedIn } = useContext(AuthContext);
+  const { userDetails, setUserDetails } = useContext(AuthContext);
   const ROLE_MAP: any = {
     ENUMERATOR: 'Enumerator',
     DISTRICT_ADMIN: 'District Admin',
@@ -54,12 +54,12 @@ const CommonHeader: React.FC<HeaderProps> = ({
     );
 
     // 3. Reset context
-    setIsLoggedIn(false);
+    setUserDetails(null);
   };
 
   const displayName =
     routeName === 'EnumeratorDashboard' || routeName === 'DistrictDashboard'
-      ? `${name} - ${ROLE_MAP[userRole]}`
+      ? `${name} - ${ROLE_MAP[userDetails?.role]}`
       : ROUTE_MAP[routeName];
   return (
     <View style={styles.container}>

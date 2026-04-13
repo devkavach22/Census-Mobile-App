@@ -7,6 +7,7 @@ import {
   ScrollView,
   Dimensions,
   StatusBar,
+  TextInput,
 } from 'react-native';
 import AppIcon from '../../components/common/AppIcon';
 import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
@@ -17,12 +18,13 @@ import { FONTS } from '../../theme/fonts';
 import { showToast } from '../../components/common/showToast';
 import { updateState } from '../../store/slices/commonSlice';
 import { useAppDispatch } from '../../store/hooks';
+import { USER_ROLE_API_MAP } from '../../utils/common';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 600;
 
 const EnumeratorDashboard = () => {
   const Navigation = useNavigation();
-  const { userRole, setIsLoggedIn } = useContext(AuthContext);
+  const { userDetails, setUserDetails } = useContext(AuthContext);
   const dispatch = useAppDispatch();
 
   const logOut = async () => {
@@ -39,7 +41,7 @@ const EnumeratorDashboard = () => {
     );
 
     // 3. Reset context
-    setIsLoggedIn(false);
+    setUserDetails(null);
   };
   return (
     <SafeAreaView style={styles.container}>
@@ -56,10 +58,12 @@ const EnumeratorDashboard = () => {
             </View>
 
             <View>
-              <Text style={styles.userName}>Ramesh Kumar - Enumerator</Text>
+              <Text style={styles.userName}>{`${userDetails.name} - ${
+                USER_ROLE_API_MAP[userDetails.role]
+              }`}</Text>
 
               <Text style={styles.userLocation}>
-                Ward 12, Saket, South Delhi
+                {`${userDetails.district},${userDetails.state}`}
               </Text>
             </View>
           </View>
@@ -69,7 +73,7 @@ const EnumeratorDashboard = () => {
 
             <View style={styles.onlineBadge}>
               <View style={styles.dot} />
-              <Text style={styles.onlineText}>Online</Text>
+              <Text style={styles.onlinehHeaderText}>Online</Text>
             </View>
 
             {/* Lock Icon */}
@@ -203,6 +207,7 @@ const EnumeratorDashboard = () => {
         {/* ================= AI ASSISTANT ================= */}
 
         <View style={styles.aiCard}>
+          {/* Header */}
           <View style={styles.aiHeader}>
             <View style={styles.aiTitleRow}>
               <AppIcon type="Feather" name="cpu" size={18} color="#2563EB" />
@@ -215,10 +220,40 @@ const EnumeratorDashboard = () => {
             </View>
           </View>
 
+          {/* First AI Message */}
           <View style={styles.aiMessage}>
             <Text style={styles.aiMessageText}>
               Hello Ramesh! You have 2 pending verifications. Need help with
               Aadhaar mismatch cases?
+            </Text>
+          </View>
+
+          {/* Input Row */}
+          <View style={styles.inputRow}>
+            <TextInput
+              placeholder="Ask anything... (Hindi/English)"
+              placeholderTextColor="#9CA3AF"
+              style={styles.input}
+            />
+
+            <TouchableOpacity style={styles.sendButton}>
+              <Text style={styles.sendButtonText}>Send</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Second AI Message */}
+          <View style={styles.aiMessageSecondary}>
+            <AppIcon
+              type="Feather"
+              name="cpu"
+              size={16}
+              color="#6B7280"
+              style={{ marginRight: 6 }}
+            />
+
+            <Text style={styles.secondaryMessageText}>
+              Duplicate household alerts can be dismissed if you verify a
+              different address in person.
             </Text>
           </View>
         </View>
@@ -303,6 +338,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
 
+  inputRow: {
+    flexDirection: 'row',
+    marginTop: 10,
+    alignItems: 'center',
+  },
+
   avatar: {
     width: 50,
     height: 50,
@@ -354,10 +395,16 @@ const styles = StyleSheet.create({
     marginRight: 6,
   },
 
-  onlineText: {
+  onlinehHeaderText: {
     color: 'white',
     fontSize: 12,
     fontFamily: FONTS.Medium,
+  },
+
+  onlineText: {
+    color: '#16A34A',
+    fontSize: 11,
+    fontWeight: '600',
   },
 
   lockIcon: {
@@ -484,10 +531,12 @@ const styles = StyleSheet.create({
   },
 
   sectionTitle: {
-    fontSize: 14,
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#6B7280',
     marginLeft: 6,
-    marginBottom: 12,
     fontFamily: FONTS.SemiBold,
+    letterSpacing: 0.5,
   },
 
   quickGrid: {
@@ -547,10 +596,12 @@ const styles = StyleSheet.create({
   },
 
   aiCard: {
-    backgroundColor: '#FFFFFF',
-    margin: 16,
-    padding: 16,
+    backgroundColor: '#F9FAFB',
     borderRadius: 12,
+    margin: 14,
+    padding: 20,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
   },
 
   aiHeader: {
@@ -565,10 +616,21 @@ const styles = StyleSheet.create({
   },
 
   onlineBadgeSmall: {
-    backgroundColor: '#16A34A',
+    backgroundColor: '#DCFCE7',
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: 20,
+  },
+
+  input: {
+    flex: 1,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 8,
+    fontSize: 13,
   },
 
   aiMessage: {
@@ -578,9 +640,38 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
 
+  sendButton: {
+    marginLeft: 8,
+    backgroundColor: '#1D4ED8',
+    paddingHorizontal: 16,
+    paddingVertical: 9,
+    borderRadius: 8,
+  },
+
   aiMessageText: {
     color: '#1E3A8A',
     fontSize: 13,
     fontFamily: FONTS.Regular,
+  },
+
+  sendButtonText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '600',
+  },
+
+  aiMessageSecondary: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#E5E7EB',
+    padding: 10,
+    borderRadius: 8,
+    marginTop: 10,
+  },
+
+  secondaryMessageText: {
+    flex: 1,
+    fontSize: 13,
+    color: '#374151',
   },
 });
