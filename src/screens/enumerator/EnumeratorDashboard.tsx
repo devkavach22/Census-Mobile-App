@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
   View,
   Text,
@@ -12,20 +12,51 @@ import {
 import AppIcon from '../../components/common/AppIcon';
 import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
 import { AuthContext } from '../../../App';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { FONTS } from '../../theme/fonts';
 import { showToast } from '../../components/common/showToast';
-import { updateState } from '../../store/slices/commonSlice';
+import {
+  DashboardStatesApi,
+  GetNotificationsApi,
+  updateState,
+} from '../../store/slices/commonSlice';
 import { useAppDispatch } from '../../store/hooks';
 import { USER_ROLE_API_MAP } from '../../utils/common';
+import { useSelector } from 'react-redux';
 const { width } = Dimensions.get('window');
 const isTablet = width >= 600;
-
+const getNotificationConfig = (type: any) => {
+  switch (type) {
+    case 'warning':
+      return { icon: 'warning', color: '#F59E0B' };
+    case 'failed':
+      return { icon: 'x-circle', color: '#EF4444', type: 'Feather' };
+    case 'success':
+      return { icon: 'check-circle', color: '#16A34A', type: 'Feather' };
+    case 'information':
+      return { icon: 'info', color: '#3B82F6' };
+    default:
+      return { icon: 'bell', color: '#6B7280' };
+  }
+};
 const EnumeratorDashboard = () => {
   const Navigation = useNavigation();
+  const IsFocused = useIsFocused();
   const { userDetails, setUserDetails } = useContext(AuthContext);
+  const { DashboardStatesData, notifications } = useSelector(
+    (state: any) => state.common,
+  );
+
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (IsFocused) {
+      dispatch(DashboardStatesApi());
+      dispatch(GetNotificationsApi());
+    }
+  }, [IsFocused]);
+  console.log('notifications===>', notifications);
 
   const logOut = async () => {
     // 1. Clear storage
@@ -43,6 +74,7 @@ const EnumeratorDashboard = () => {
     // 3. Reset context
     setUserDetails(null);
   };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent barStyle="default" />
@@ -89,28 +121,28 @@ const EnumeratorDashboard = () => {
         <View style={styles.statsRow}>
           <StatCard
             title="ASSIGNED"
-            value="48"
+            value={DashboardStatesData?.assigned}
             subtitle="Households"
             color="#0F172A"
           />
 
           <StatCard
             title="COMPLETED"
-            value="31"
+            value={DashboardStatesData?.completed}
             subtitle="Surveys done"
             color="#16A34A"
           />
 
           <StatCard
             title="PENDING"
-            value="17"
+            value={DashboardStatesData?.pending}
             subtitle="Remaining"
             color="#F59E0B"
           />
 
           <StatCard
             title="FLAGGED"
-            value="2"
+            value={DashboardStatesData?.flagged}
             subtitle="Review needed"
             color="#EF4444"
           />
@@ -175,32 +207,30 @@ const EnumeratorDashboard = () => {
 
           <View style={styles.notificationsCard}>
             <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            >
+              {notifications.map((item: any, index: any) => {
+                const config = getNotificationConfig(item.type);
 
-            <NotificationItem
-              icon="warning"
-              color="#F59E0B"
-              title="Fraud flag on HH-1042"
-              subtitle="Duplicate Aadhaar • 12 min ago"
-            />
-            <View style={styles.notificationSeparator} />
+                return (
+                  <React.Fragment key={index}>
+                    <NotificationItem
+                      icon={config.icon}
+                      type={config.type}
+                      color={config.color}
+                      title={item.message}
+                      subtitle={item.time}
+                    />
 
-            <NotificationItem
-              icon="message-square"
-              type="Feather"
-              color="#3B82F6"
-              title="Supervisor message"
-              subtitle="Complete Block B by 5 PM • 1 hr ago"
-            />
-
-            <View style={styles.notificationSeparator} />
-
-            <NotificationItem
-              icon="check-circle"
-              type="Feather"
-              color="#16A34A"
-              title="HH-1039 verified"
-              subtitle="Aadhaar match confirmed • 2 hr ago"
-            />
+                    {index !== notifications.length - 1 && (
+                      <View style={styles.notificationSeparator} />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </ScrollView>
           </View>
         </View>
 
@@ -524,6 +554,7 @@ const styles = StyleSheet.create({
 
   notificationsCard: {
     flex: 1,
+    maxHeight: 300,
     backgroundColor: '#FFFFFF',
     padding: 16,
     borderRadius: 12,
@@ -533,6 +564,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 12,
     fontWeight: '600',
+    paddingBottom: 10,
     color: '#6B7280',
     marginLeft: 6,
     fontFamily: FONTS.SemiBold,

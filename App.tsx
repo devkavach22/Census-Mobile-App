@@ -1,16 +1,10 @@
 import React, { useEffect, useState, createContext } from 'react';
-
 import { View, Text, StyleSheet, Platform, Dimensions } from 'react-native';
-
 import DeviceInfo from 'react-native-device-info';
-
 import { NavigationContainer } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
-
-import FlashMessage, { showMessage } from 'react-native-flash-message';
-
+import FlashMessage from 'react-native-flash-message';
 import AuthStack from './src/navigation/AuthStack';
-
 import { getStorageData, STORAGE_KEYS } from './src/utils/storage';
 import RoleBasedStack from './src/navigation/RoleBasedStack';
 import Orientation from 'react-native-orientation-locker';
@@ -32,7 +26,6 @@ const AppWrapper = () => {
   const isTablet = DeviceInfo.isTablet() && isLargeScreen;
   const [userDetails, setUserDetails] = useState<any>(null);
   const dispatch = useDispatch();
-
   const { error, success, loading } = useSelector((state: any) => state.common);
 
   useEffect(() => {
@@ -52,16 +45,14 @@ const AppWrapper = () => {
   /* ---------------- CHECK LOGIN ---------------- */
   useEffect(() => {
     Orientation.lockToLandscape();
-    return () => {
-      Orientation.unlockAllOrientations();
-    };
+    Orientation.getOrientation(() => {});
   }, []);
 
   useEffect(() => {
     const checkLogin = async () => {
       try {
         const data = await getStorageData(STORAGE_KEYS.LOGIN_DATA);
-      
+
         if (data?.isLoggedIn) {
           setUserDetails(data);
         } else {

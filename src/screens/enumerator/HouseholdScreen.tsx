@@ -11,6 +11,7 @@ import {
 import { isTablet } from '../../utils/responsive';
 import AppIcon from '../../components/common/AppIcon';
 import { useNavigation } from '@react-navigation/native';
+import { COLORS } from '../../theme/colors';
 
 const HouseholdScreen = () => {
   const navigation = useNavigation<any>();
@@ -45,24 +46,23 @@ const HouseholdScreen = () => {
             </View>
           </View>
         </View>
-
-        {/* Progress Bar */}
-        <View style={styles.stepperContainer}>
-          <View style={styles.stepActive}>
-            <Text style={styles.stepTextActive}>1</Text>
-          </View>
-          <View style={styles.stepLineActive} />
-          <View style={styles.stepActive}>
-            <Text style={styles.stepTextActive}>2</Text>
-          </View>
-          <View style={styles.stepLineInactive} />
-          <View style={styles.stepInactive}>
-            <Text style={styles.stepTextInactive}>3</Text>
-          </View>
-          <View style={styles.stepLineInactive} />
-          <View style={styles.stepInactive}>
-            <Text style={styles.stepTextInactive}>4</Text>
-          </View>
+      </View>
+      {/* Progress Bar */}
+      <View style={styles.stepperContainer}>
+        <View style={styles.stepActive}>
+          <Text style={styles.stepTextActive}>1</Text>
+        </View>
+        <View style={styles.stepLineActive} />
+        <View style={styles.stepActive}>
+          <Text style={styles.stepTextActive}>2</Text>
+        </View>
+        <View style={styles.stepLineInactive} />
+        <View style={styles.stepInactive}>
+          <Text style={styles.stepTextInactive}>3</Text>
+        </View>
+        <View style={styles.stepLineInactive} />
+        <View style={styles.stepInactive}>
+          <Text style={styles.stepTextInactive}>4</Text>
         </View>
       </View>
 
@@ -217,8 +217,12 @@ const FormInput = ({
 
 const styles = StyleSheet.create({
   mainContainer: { flex: 1, backgroundColor: '#E2E8F0' },
-  header: { backgroundColor: '#0F172A', padding: 20, paddingTop: 40 },
-  headerTop: { flexDirection: 'row', alignItems: 'center' },
+  header: { padding: 20, paddingTop: 40, backgroundColor: '#0F172A' },
+  headerTop: {
+    flexDirection: 'row',
+    // backgroundColor: '#0F172A',
+    alignItems: 'center',
+  },
   headerTitle: { color: '#fff', fontSize: 18, fontWeight: '700' },
   headerSub: { color: '#94A3B8', fontSize: 12 },
   headerRight: { marginLeft: 'auto', flexDirection: 'row' },
@@ -259,13 +263,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginTop: 25,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
   },
   stepActive: {
-    width: 28,
-    height: 28,
-    borderRadius: 14,
-    backgroundColor: '#3B82F6',
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#1E3A8A',
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
@@ -275,18 +279,18 @@ const styles = StyleSheet.create({
     width: 28,
     height: 28,
     borderRadius: 14,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.dark1,
     justifyContent: 'center',
     alignItems: 'center',
     opacity: 0.3,
   },
   stepTextActive: { color: '#fff', fontWeight: 'bold' },
-  stepTextInactive: { color: '#475569' },
-  stepLineActive: { flex: 1, height: 4, backgroundColor: '#3B82F6' },
+  stepTextInactive: { color: '#fff' },
+  stepLineActive: { flex: 1, height: 4, backgroundColor: '#1E3A8A' },
   stepLineInactive: {
     flex: 1,
     height: 4,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: COLORS.dark1,
     opacity: 0.2,
   },
 

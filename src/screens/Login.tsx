@@ -77,9 +77,12 @@ const Login = () => {
 
   useEffect(() => {
     if (mobile.length === 10 && loginType === 'OTP') {
-      handleSendOtp();
+      const delay = setTimeout(() => {
+        handleSendOtp();
+      }, 500);
+      return () => clearTimeout(delay);
     }
-  }, [mobile]);
+  }, [mobile, loginType]);
 
   useEffect(() => {
     return () => {
@@ -132,14 +135,25 @@ const Login = () => {
 
       // Move forward
       if (text && index < otp.length - 1) {
-        inputs.current[index + 1]?.focus();
+        setTimeout(() => {
+          inputs.current[index + 1]?.focus();
+        }, 50);
+      }
+
+      // Auto verify when last filled
+      if (index === otp.length - 1 && text) {
+        setTimeout(() => {
+          handleLogin(); // 🔥 auto submit
+        }, 200);
       }
     };
 
     const handleKeyPress = (key: string, index: number) => {
       if (key === 'Backspace') {
         if (otp[index] === '' && index > 0) {
-          inputs.current[index - 1]?.focus();
+          setTimeout(() => {
+            inputs.current[index - 1]?.focus();
+          }, 50);
         }
       }
     };
@@ -158,6 +172,8 @@ const Login = () => {
             maxLength={1}
             value={digit}
             textAlign="center"
+            textContentType="oneTimeCode"
+            autoComplete="sms-otp"
             onFocus={() => setFocusedIndex(index)}
             onChangeText={text => handleChange(text, index)}
             onKeyPress={({ nativeEvent }) =>
