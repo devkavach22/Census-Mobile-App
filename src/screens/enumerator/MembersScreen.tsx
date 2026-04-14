@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
@@ -6,58 +6,200 @@ import {
   StyleSheet,
   ScrollView,
   TextInput,
+  Alert,
 } from 'react-native';
 import AppIcon from '../../components/common/AppIcon';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, useRoute } from '@react-navigation/native';
+import { CreateHouseholdApi } from '../../store/slices/commonSlice';
+import { useAppDispatch } from '../../store/hooks';
 
 const MembersScreen = () => {
   const navigation = useNavigation<any>();
-  const members = [
-    {
-      id: 1,
-      name: 'Mohan Lal Sharma',
-      age: 52,
-      gender: 'Male',
-      relation: 'Head',
-      initials: 'ML',
-      color: '#DBEAFE',
-      textColor: '#1E40AF',
-      status: 'Verified',
-    },
-    {
-      id: 2,
-      name: 'Sunita Sharma',
-      age: 47,
-      gender: 'Female',
-      relation: 'Spouse',
-      initials: 'SS',
-      color: '#F3E8FF',
-      textColor: '#6B21A8',
-      status: 'Verified',
-    },
-    {
-      id: 3,
-      name: 'Rohit Sharma',
-      age: 24,
-      gender: 'Male',
-      relation: 'Son',
-      initials: 'RS',
+  const route = useRoute<any>();
+  const dispatch = useAppDispatch();
+  const { data } = route.params || {};
+  const createInitialMember = (data: any) => {
+    if (!data) return [];
+
+    return [
+      {
+        id: Date.now(),
+        name: data.headName || '',
+        age: data.age || '', // if available
+        gender: data.gender || '',
+        relation: data.relationship || 'Head',
+        education: data.education || '',
+        status: 'Verified',
+        aadhaar_raw: data.aadhaar || '',
+        initials: (data.headName || '')
+          .split(' ')
+          .map((n: string) => n[0])
+          .join('')
+          .toUpperCase(),
+        color: '#E0F2FE',
+        textColor: '#075985',
+      },
+    ];
+  };
+  const [members, setMembers] = useState<any[]>(() =>
+    createInitialMember(data),
+  );
+
+  const [form, setForm] = useState({
+    name: '',
+    age: '',
+    gender: '',
+    relation: '',
+    education: '',
+  });
+
+  const RELATION_OPTIONS = ['Son', 'Daughter', 'Spouse', 'Parent'];
+  const GENDER_OPTIONS = ['Male', 'Female', 'Other'];
+  const EDUCATION_OPTIONS = ['Primary', 'Secondary', 'Graduate'];
+  const [showRelationModal, setShowRelationModal] = useState(false);
+  const [showGenderModal, setShowGenderModal] = useState(false);
+  const [showEducationModal, setShowEducationModal] = useState(false);
+  const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
+  const [errors, setErrors] = useState<any>({});
+
+  const handleSave = async () => {
+    const payload = {
+      head_name: data.headName,
+      mobile: data.mobile,
+      address: data.address,
+      state_id: data.state.id,
+      district_id: data.district.id,
+      latitude: data.latitude || '23.0537',
+      longitude: data.longitude || '72.5189',
+      aadhaar_number_raw: data.aadhaar,
+      aadhaar_consent: data.aadhaar_consent,
+      aadhaar_verified: data.aadhaar_verified,
+
+      members: members
+        .filter(m => m.relation !== 'head')
+        .map(m => ({
+          name: m.name,
+          age: m.age,
+          gender: m.gender?.toLowerCase(),
+          relationship: m.relation?.toLowerCase(),
+          education: m.education,
+          aadhaar_raw: m.aadhaar_raw || '',
+          aadhaar_verified: m.status === 'Verified',
+          verification_status: m.status === 'Verified' ? 'verified' : 'pending',
+        })),
+    };
+
+    const result = await dispatch(CreateHouseholdApi(payload)).unwrap();
+    if (result.status === 'success') {
+      navigation.navigate('Survey');
+    }
+  };
+
+  const handleChange = (key: string, value: string) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+    setErrors((prev: any) => ({ ...prev, [key]: '' }));
+  };
+
+  const validate = () => {
+    let temp: any = {};
+    let isValid = true;
+
+    if (!form.name.trim()) {
+      temp.name = 'Name required';
+      isValid = false;
+    }
+
+    if (!form.age) {
+      temp.age = 'Age required';
+      isValid = false;
+    } else if (isNaN(Number(form.age)) || Number(form.age) <= 0) {
+      temp.age = 'Invalid age';
+      isValid = false;
+    }
+
+    if (!form.gender) {
+      temp.gender = 'Gender required';
+      isValid = false;
+    }
+
+    if (!form.relation) {
+      temp.relation = 'Relation required';
+      isValid = false;
+    }
+
+    setErrors(temp);
+    return isValid;
+  };
+
+  const handleAddMember = () => {
+    if (!validate()) return;
+
+    const isEditing = editingMemberId !== null;
+
+    const memberData = {
+      name: form.name,
+      age: Number(form.age),
+      gender: form.gender,
+      relation: form.relation,
+      education: form.education,
+      initials: form.name
+        .split(' ')
+        .map((n: string) => n[0])
+        .join('')
+        .toUpperCase(),
       color: '#E0F2FE',
       textColor: '#075985',
-      status: 'Pending',
-    },
-    {
-      id: 4,
-      name: 'Priya Sharma',
-      age: 19,
-      gender: 'Female',
-      relation: 'Daughter',
-      initials: 'PS',
-      color: '#DCFCE7',
-      textColor: '#166534',
-      status: 'Pending',
-    },
-  ];
+    };
+
+    if (isEditing) {
+      setMembers(prev =>
+        prev.map(m =>
+          m.id === editingMemberId
+            ? {
+                ...m,
+                ...memberData,
+
+                // ✅ IMPORTANT: preserve old status
+                status: m.status,
+
+                id: editingMemberId,
+              }
+            : m,
+        ),
+      );
+
+      setEditingMemberId(null);
+    } else {
+      setMembers(prev => [
+        ...prev,
+        {
+          ...memberData,
+          id: Date.now(),
+          status: 'Pending', // only new members are pending
+        },
+      ]);
+    }
+
+    setForm({
+      name: '',
+      age: '',
+      gender: '',
+      relation: '',
+      education: '',
+    });
+  };
+
+  const handleEditMember = (member: any) => {
+    setForm({
+      name: member.name,
+      age: String(member.age),
+      gender: member.gender,
+      relation: member.relation,
+      education: member.education,
+    });
+
+    setEditingMemberId(member.id);
+  };
 
   return (
     <View style={styles.mainContainer}>
@@ -135,7 +277,16 @@ const MembersScreen = () => {
                   </View>
                 )}
                 <TouchableOpacity style={styles.actionBtn}>
-                  <Text style={styles.actionBtnText}>
+                  <Text
+                    style={styles.actionBtnText}
+                    onPress={() => {
+                      if (item.status === 'Verified') {
+                        handleEditMember(item);
+                      } else {
+                        navigation.navigate('Verification');
+                      }
+                    }}
+                  >
                     {item.status === 'Verified' ? 'Edit' : 'Verify →'}
                   </Text>
                 </TouchableOpacity>
@@ -146,27 +297,81 @@ const MembersScreen = () => {
 
         {/* Add New Member Form Card */}
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>ADD NEW MEMBER</Text>
+          <Text style={styles.cardTitle}>
+            {editingMemberId !== null ? 'UPDATE MEMBER' : 'ADD NEW MEMBER'}
+          </Text>
           <View style={styles.formGrid}>
             <View style={{ flex: 2 }}>
               <FormInput
                 label="Full Name *"
                 placeholder="As per Aadhaar / ID"
+                value={form.name}
+                editable={form.relation !== 'head'}
+                onChangeText={(val: string) => handleChange('name', val)}
+                error={errors.name}
               />
             </View>
             <View style={{ flex: 1.5 }}>
-              <FormInput label="Relationship *" value="Son" isDropdown />
+              <Text style={styles.inputLabel}>{'Relationship *'}</Text>
+              <TouchableOpacity
+                style={[
+                  styles.inputField,
+                  form.relation === 'head' && { opacity: 0.6 },
+                ]}
+                onPress={() => {
+                  if (form.relation === 'head') return;
+                  setShowRelationModal(true);
+                }}
+                disabled={form.relation === 'head'}
+              >
+                <Text style={styles.inputText}>
+                  {form.relation || 'Select Relationship'}
+                </Text>
+              </TouchableOpacity>
+
+              {errors.relation && (
+                <Text style={{ color: 'red', fontSize: 11 }}>
+                  {errors.relation}
+                </Text>
+              )}
             </View>
           </View>
           <View style={styles.formGrid}>
             <View style={{ flex: 1 }}>
-              <FormInput label="Age *" placeholder="Years" />
+              <FormInput
+                label="Age *"
+                placeholder="Years"
+                value={form.age}
+                onChangeText={(val: string) => handleChange('age', val)}
+                error={errors.age}
+              />
             </View>
             <View style={{ flex: 1 }}>
-              <FormInput label="Gender *" value="Male" isDropdown />
+              <Text style={styles.inputLabel}>{'Gender *'}</Text>
+              <TouchableOpacity
+                style={styles.inputField}
+                onPress={() => setShowGenderModal(true)}
+              >
+                <Text style={styles.inputText}>
+                  {form.gender || 'Select Gender'}
+                </Text>
+              </TouchableOpacity>
+              {errors.gender && (
+                <Text style={{ color: 'red', fontSize: 11 }}>
+                  {errors.gender}
+                </Text>
+              )}
             </View>
             <View style={{ flex: 1 }}>
-              <FormInput label="Education" value="Graduate" isDropdown />
+              <Text style={styles.inputLabel}>{'Education'}</Text>
+              <TouchableOpacity
+                style={styles.inputField}
+                onPress={() => setShowEducationModal(true)}
+              >
+                <Text style={styles.inputText}>
+                  {form.education || 'Select Education'}
+                </Text>
+              </TouchableOpacity>
             </View>
           </View>
 
@@ -179,38 +384,130 @@ const MembersScreen = () => {
             </Text>
           </View>
 
-          <TouchableOpacity style={styles.addThisBtn}>
-            <Text style={styles.addThisBtnText}>+ Add This Member</Text>
+          <TouchableOpacity style={styles.addThisBtn} onPress={handleAddMember}>
+            <Text style={styles.addThisBtnText}>
+              {editingMemberId !== null ? 'Update Member' : '+ Add This Member'}
+            </Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
+      {showRelationModal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Select Relationship</Text>
+
+            <ScrollView>
+              {RELATION_OPTIONS.map(item => (
+                <TouchableOpacity
+                  key={item}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    handleChange('relation', item);
+                    setShowRelationModal(false);
+                  }}
+                >
+                  <Text>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setShowRelationModal(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {showGenderModal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Select Gender</Text>
+
+            <ScrollView>
+              {GENDER_OPTIONS.map(item => (
+                <TouchableOpacity
+                  key={item}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    handleChange('gender', item);
+                    setShowGenderModal(false);
+                  }}
+                >
+                  <Text>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setShowGenderModal(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {showEducationModal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Select Education</Text>
+
+            <ScrollView>
+              {EDUCATION_OPTIONS.map(item => (
+                <TouchableOpacity
+                  key={item}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    handleChange('education', item);
+                    setShowEducationModal(false);
+                  }}
+                >
+                  <Text>{item}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setShowEducationModal(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
 
       {/* Bottom Navigation */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.footerBack}>← Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.footerNext}
-          onPress={() => navigation.navigate('Verification')}
-        >
-          <Text style={styles.footerNextText}>Next: Verify Members →</Text>
+        <TouchableOpacity style={styles.footerNext} onPress={handleSave}>
+          <Text style={styles.footerNextText}>Save & Continue →</Text>
         </TouchableOpacity>
       </View>
     </View>
   );
 };
 
-const FormInput = ({ label, placeholder, value, isDropdown }: any) => (
+const FormInput = ({
+  label,
+  editable = true,
+  placeholder,
+  value,
+  onChangeText,
+  isDropdown,
+  error,
+}: any) => (
   <View style={styles.inputGroup}>
     <Text style={styles.inputLabel}>{label}</Text>
-    <View style={styles.inputField}>
+
+    <View style={[styles.inputField, !editable && { opacity: 0.6 }]}>
       <TextInput
         placeholder={placeholder}
+        editable={editable}
         value={value}
+        maxLength={30}
+        onChangeText={onChangeText}
         style={styles.inputText}
         placeholderTextColor="#94A3B8"
       />
+
       {isDropdown && (
         <AppIcon
           type="Ionicons"
@@ -220,6 +517,8 @@ const FormInput = ({ label, placeholder, value, isDropdown }: any) => (
         />
       )}
     </View>
+
+    {error && <Text style={{ color: 'red', fontSize: 11 }}>{error}</Text>}
   </View>
 );
 
@@ -268,6 +567,7 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     fontSize: 12,
+    paddingBottom: 20,
     fontWeight: '800',
     color: '#64748B',
     letterSpacing: 0.5,
@@ -396,6 +696,45 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   footerNextText: { color: '#fff', fontWeight: 'bold', fontSize: 15 },
+
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+  },
+
+  modalBox: {
+    width: '85%',
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 15,
+    maxHeight: '60%',
+  },
+
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
+  },
+
+  closeText: {
+    textAlign: 'center',
+    marginTop: 10,
+    color: 'red',
+    fontWeight: 'bold',
+  },
 });
 
 export default MembersScreen;

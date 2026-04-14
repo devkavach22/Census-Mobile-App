@@ -218,7 +218,7 @@ const VerificationScreen = () => {
 
             <TouchableOpacity
               style={styles.saveBtn}
-              onPress={() => navigation.navigate('Survey')}
+              onPress={() => navigation.goBack()}
             >
               <Text style={styles.saveBtnText}>Save & Continue →</Text>
             </TouchableOpacity>

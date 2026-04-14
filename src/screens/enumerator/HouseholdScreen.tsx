@@ -7,6 +7,7 @@ import {
   StyleSheet,
   TextInput,
   StatusBar,
+  Alert,
 } from 'react-native';
 import { isTablet } from '../../utils/responsive';
 import AppIcon from '../../components/common/AppIcon';
@@ -19,31 +20,37 @@ const HouseholdScreen = () => {
   const navigation = useNavigation<any>();
   const IsFocused = useIsFocused();
   const { location } = useLocation();
-
+  const [states, setStates] = React.useState<any[]>([]);
+  const [districts, setDistricts] = React.useState<any[]>([]);
+  const [selectedState, setSelectedState] = React.useState<any>(null);
+  const [selectedDistrict, setSelectedDistrict] = React.useState<any>(null);
+  const [showStateModal, setShowStateModal] = React.useState(false);
+  const [showDistrictModal, setShowDistrictModal] = React.useState(false);
   const dispatch = useAppDispatch();
 
   useEffect(() => {
     if (IsFocused) {
-      const params = {
-        stateId: 588,
-      };
-      // dispatch(GetStatesApi());
-      // dispatch(GetDistrictsApi(params));
+      dispatch(GetStatesApi())
+        .unwrap()
+        .then((res: any) => {
+          setStates(res?.data || []);
+        });
     }
   }, [IsFocused]);
 
-  const generateHHId = (state: any, district: any) => {
+  const generateHHId = (stateName: string, districtName: string) => {
     const year = new Date().getFullYear();
 
-    const stateCode = state?.slice(0, 2).toUpperCase() || 'XX';
+    const stateCode = stateName?.substring(0, 2).toUpperCase() || 'XX';
+
     const districtCode =
-      district
+      districtName
         ?.split(' ')
-        .map((word: any[]) => word[0])
+        .map(word => word[0])
         .join('')
         .toUpperCase() || 'X';
 
-    const randomId = Math.floor(1000 + Math.random() * 9000); // 4 digit
+    const randomId = Math.floor(1000 + Math.random() * 9000);
 
     return `HH-${year}-${stateCode}-${districtCode}-${randomId}`;
   };
@@ -58,7 +65,6 @@ const HouseholdScreen = () => {
   });
 
   useEffect(() => {
-    console.log('location====>', location);
     if (location?.state && location?.district) {
       const id = generateHHId(location?.state, location?.district);
       setHhId(id);
@@ -75,36 +81,60 @@ const HouseholdScreen = () => {
     setErrors((prev: any) => ({ ...prev, [key]: '' }));
   };
 
+  useEffect(() => {
+    if (selectedState && selectedDistrict) {
+      const id = generateHHId(selectedState.name, selectedDistrict.name);
+      setHhId(id);
+    }
+  }, [selectedState, selectedDistrict]);
+
   const validateForm = () => {
     let newErrors: any = {};
 
+    // Head Name
     if (!form.headName.trim()) {
       newErrors.headName = 'Head name is required';
+    } else if (form.headName.length < 3) {
+      newErrors.headName = 'Minimum 3 characters required';
     }
 
+    // Mobile
     if (!form.mobile.trim()) {
       newErrors.mobile = 'Mobile number is required';
     } else if (!/^[6-9]\d{9}$/.test(form.mobile)) {
-      newErrors.mobile = 'Invalid mobile number';
+      newErrors.mobile = 'Enter valid 10-digit Indian mobile number';
     }
 
-    // if (!form.state) {
-    //   newErrors.state = 'State is required';
-    // }
+    // State
+    if (!selectedState) {
+      newErrors.state = 'State is required';
+    }
 
-    // if (!form.district) {
-    //   newErrors.district = 'District is required';
-    // }
+    // District
+    if (!selectedDistrict) {
+      newErrors.district = 'District is required';
+    }
 
+    // Address
     if (!form.address.trim()) {
       newErrors.address = 'Address is required';
+    } else if (form.address.length < 5) {
+      newErrors.address = 'Address too short';
     }
 
+    // Aadhaar
     if (!form.aadhaar) {
-      errors.aadhaar = 'Required';
-    } else if (form.aadhaar.length !== 12) {
-      errors.aadhaar = 'Aadhaar must be 12 digits';
+      newErrors.aadhaar = 'Aadhaar is required';
+    } else if (!/^\d{12}$/.test(form.aadhaar)) {
+      newErrors.aadhaar = 'Aadhaar must be 12 digits';
+    } else if (/^(\d)\1{11}$/.test(form.aadhaar)) {
+      newErrors.aadhaar = 'Invalid Aadhaar number';
     }
+
+    // GPS validation (optional but recommended)
+    // if (!location?.latitude || !location?.longitude) {
+    //   newErrors.gps = 'Location not available';
+    // }
 
     setErrors(newErrors);
 
@@ -113,15 +143,22 @@ const HouseholdScreen = () => {
 
   const handleSave = () => {
     if (!validateForm()) return;
-
     const payload = {
-      ...form,
+      aadhaar: form.aadhaar,
+      address: form.address,
+      headName: form.headName,
+      mobile: form.mobile,
+      age: 40,
+      gender: 'Male',
+      district: selectedDistrict,
+      state: selectedState,
       hhId,
       latitude: location?.latitude,
       longitude: location?.longitude,
+      aadhaar_consent: true,
+      aadhaar_verified: false,
+      relationship: 'head',
     };
-
-    console.log('FINAL DATA =>', payload);
 
     navigation.navigate('AddMembers', { data: payload });
   };
@@ -151,10 +188,40 @@ const HouseholdScreen = () => {
 
     setForm(prev => ({
       ...prev,
-      aadhaar: cleaned, // store original digits
+      aadhaar: cleaned,
     }));
 
     setErrors((prev: any) => ({ ...prev, aadhaar: '' }));
+  };
+
+  const handleStateChange = (state: any) => {
+    setSelectedState(state);
+    setSelectedDistrict(null);
+
+    handleChange('state', state.name);
+
+    dispatch(GetDistrictsApi({ stateId: state.id }))
+      .unwrap()
+      .then((res: any) => {
+        const list = res?.data?.data || res?.data || [];
+        setDistricts(Array.isArray(list) ? list : []);
+      });
+  };
+
+  const handleDistrictChange = (district: any) => {
+    setSelectedDistrict(district);
+    handleChange('district', district.name);
+  };
+
+  const handleMobileChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 10);
+
+    setForm(prev => ({
+      ...prev,
+      mobile: cleaned,
+    }));
+
+    setErrors((prev: any) => ({ ...prev, mobile: '' }));
   };
 
   return (
@@ -230,7 +297,7 @@ const HouseholdScreen = () => {
                 label="Mobile Number *"
                 placeholder={'Mobile number'}
                 value={form.mobile}
-                onChangeText={(val: string) => handleChange('mobile', val)}
+                onChangeText={handleMobileChange}
                 error={errors.mobile}
               />
             </View>
@@ -239,10 +306,52 @@ const HouseholdScreen = () => {
               <Text style={styles.cardHeader}>ADDRESS</Text>
               <View style={styles.row}>
                 <View style={{ flex: 1, marginRight: 8 }}>
-                  <FormInput label="State" value="Delhi" isDropdown />
+                  <TouchableOpacity
+                    style={[
+                      styles.inputWrapper,
+                      errors.state && { borderColor: 'red' },
+                    ]}
+                    onPress={() => setShowStateModal(true)}
+                  >
+                    <Text style={{ flex: 1 }}>
+                      {selectedState?.name || 'Select State'}
+                    </Text>
+                    <AppIcon type="Ionicons" name="chevron-down" size={18} />
+                  </TouchableOpacity>
+
+                  {errors.state && (
+                    <Text style={{ color: 'red', fontSize: 11 }}>
+                      {errors.state}
+                    </Text>
+                  )}
                 </View>
+
+                {/* DISTRICT */}
                 <View style={{ flex: 1 }}>
-                  <FormInput label="District" value="South Delhi" isDropdown />
+                  <TouchableOpacity
+                    style={[
+                      styles.inputWrapper,
+                      errors.district && { borderColor: 'red' },
+                    ]}
+                    onPress={() => {
+                      if (!selectedState) {
+                        Alert.alert('Select state first');
+                        return;
+                      }
+                      setShowDistrictModal(true);
+                    }}
+                  >
+                    <Text style={{ flex: 1 }}>
+                      {selectedDistrict?.name || 'Select District'}
+                    </Text>
+                    <AppIcon type="Ionicons" name="chevron-down" size={18} />
+                  </TouchableOpacity>
+
+                  {errors.district && (
+                    <Text style={{ color: 'red', fontSize: 11 }}>
+                      {errors.district}
+                    </Text>
+                  )}
                 </View>
               </View>
               <FormInput
@@ -280,7 +389,7 @@ const HouseholdScreen = () => {
                 onChangeText={handleAadhaarChange}
                 error={errors.aadhaar}
               />
-              <View style={styles.verifiedBox}>
+              {/* <View style={styles.verifiedBox}>
                 <AppIcon
                   type="Ionicons"
                   name="checkmark-circle"
@@ -292,7 +401,7 @@ const HouseholdScreen = () => {
                   <Text style={styles.verifiedSub}>Details auto-fetched</Text>
                 </View>
                 <Text style={styles.auditText}>Audit Logged</Text>
-              </View>
+              </View> */}
             </View>
 
             <View style={styles.card}>
@@ -300,11 +409,13 @@ const HouseholdScreen = () => {
               <View style={styles.mapPlaceholder}>
                 <View style={styles.mapDot} />
                 <View style={styles.coordsBadge}>
-                  <Text
-                    style={styles.coordsText}
-                  >{`${location?.latitude.toFixed(
-                    4,
-                  )}°N ${location?.longitude.toFixed(4)}°E`}</Text>
+                  <Text style={styles.coordsText}>
+                    {location?.latitude
+                      ? `${location.latitude.toFixed(
+                          4,
+                        )}°N ${location.longitude.toFixed(4)}°E`
+                      : 'Fetching location...'}
+                  </Text>
                 </View>
               </View>
               <TouchableOpacity style={styles.gpsButton}>
@@ -334,17 +445,65 @@ const HouseholdScreen = () => {
           </View>
         </View>
       </ScrollView>
+      {showStateModal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Select State</Text>
 
+            <ScrollView>
+              {states.map((item: any) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    handleStateChange(item);
+                    setShowStateModal(false);
+                  }}
+                >
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setShowStateModal(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {showDistrictModal && (
+        <View style={styles.modalContainer}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Select District</Text>
+
+            <ScrollView>
+              {districts?.map((item: any) => (
+                <TouchableOpacity
+                  key={item.id}
+                  style={styles.modalItem}
+                  onPress={() => {
+                    handleDistrictChange(item);
+                    setShowDistrictModal(false);
+                  }}
+                >
+                  <Text>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity onPress={() => setShowDistrictModal(false)}>
+              <Text style={styles.closeText}>Close</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
       {/* Bottom Navigation */}
       <View style={styles.footer}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
           <Text style={styles.backText}>← Back</Text>
         </TouchableOpacity>
-        <TouchableOpacity
-          style={styles.saveButton}
-          // onPress={() => navigation.navigate('AddMembers')}
-          onPress={handleSave}
-        >
+        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
           <Text style={styles.saveButtonText}>Save & Continue →</Text>
         </TouchableOpacity>
       </View>
@@ -514,7 +673,7 @@ const styles = StyleSheet.create({
   },
   inputText: { flex: 1, color: '#1E293B' },
   disabledInput: { backgroundColor: '#E0F2FE', borderColor: '#BAE6FD' },
-  row: { flexDirection: 'row' },
+  row: { flexDirection: 'row', paddingBottom: 10 },
 
   // Specific Card UI
   consentBox: {
@@ -619,6 +778,44 @@ const styles = StyleSheet.create({
     borderRadius: 8,
   },
   saveButtonText: { color: '#fff', fontWeight: 'bold' },
+
+  modalContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalBox: {
+    width: '85%',
+    maxHeight: '70%',
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 16,
+  },
+
+  modalTitle: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+
+  modalItem: {
+    paddingVertical: 12,
+    borderBottomWidth: 1,
+    borderColor: '#eee',
+  },
+
+  closeText: {
+    textAlign: 'center',
+    marginTop: 10,
+    color: 'red',
+    fontWeight: '600',
+  },
 });
 
 export default HouseholdScreen;

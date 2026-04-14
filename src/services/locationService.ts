@@ -133,7 +133,6 @@ export const useLocation = () => {
   useEffect(() => {
     fetchLocation();
   }, [fetchLocation]);
-  console.log('location data ===>', location);
   return {
     location,
     loading,
