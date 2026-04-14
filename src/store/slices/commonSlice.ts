@@ -231,7 +231,7 @@ export const GetDistrictsApi = createAsyncThunk(
   'GetDistrictsApi',
   async (params: any, { rejectWithValue }) => {
     try {
-      const response = await api.get(ENDPOINTS.GET_DISTRICTS, { params });
+      const response = await api.get(`${ENDPOINTS.GET_DISTRICTS}/state_id=${params.stateId}`);
       return response.data;
     } catch (error: any) {
       return handleThunkError(error, rejectWithValue);

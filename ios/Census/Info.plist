@@ -31,12 +31,19 @@
 		<key>NSAllowsLocalNetworking</key>
 		<true/>
 	</dict>
-	<key>NSLocationWhenInUseUsageDescription</key>
-	<string></string>
+
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>RCTNewArchEnabled</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>Census requires access to your camera to capture photos for survey and data collection purposes.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Census requires access to your photo library to upload and attach images during survey submissions.</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>Census uses your location while the app is in use to accurately record survey locations.</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>Census requires continuous location access to ensure accurate tracking and validation of field survey data.</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>MaterialIcons.ttf</string>

@@ -56,7 +56,6 @@ const EnumeratorDashboard = () => {
       dispatch(GetNotificationsApi());
     }
   }, [IsFocused]);
-  console.log('notifications===>', notifications);
 
   const logOut = async () => {
     // 1. Clear storage
@@ -707,3 +706,6 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
 });
+function getCachedLocation() {
+  throw new Error('Function not implemented.');
+}

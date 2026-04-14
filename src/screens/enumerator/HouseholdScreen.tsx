@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   ScrollView,
   View,
@@ -10,11 +10,153 @@ import {
 } from 'react-native';
 import { isTablet } from '../../utils/responsive';
 import AppIcon from '../../components/common/AppIcon';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { COLORS } from '../../theme/colors';
-
+import { useLocation } from '../../services/locationService';
+import { useAppDispatch } from '../../store/hooks';
+import { GetDistrictsApi, GetStatesApi } from '../../store/slices/commonSlice';
 const HouseholdScreen = () => {
   const navigation = useNavigation<any>();
+  const IsFocused = useIsFocused();
+  const { location } = useLocation();
+
+  const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (IsFocused) {
+      const params = {
+        stateId: 588,
+      };
+      // dispatch(GetStatesApi());
+      // dispatch(GetDistrictsApi(params));
+    }
+  }, [IsFocused]);
+
+  const generateHHId = (state: any, district: any) => {
+    const year = new Date().getFullYear();
+
+    const stateCode = state?.slice(0, 2).toUpperCase() || 'XX';
+    const districtCode =
+      district
+        ?.split(' ')
+        .map((word: any[]) => word[0])
+        .join('')
+        .toUpperCase() || 'X';
+
+    const randomId = Math.floor(1000 + Math.random() * 9000); // 4 digit
+
+    return `HH-${year}-${stateCode}-${districtCode}-${randomId}`;
+  };
+
+  const [form, setForm] = React.useState({
+    headName: '',
+    mobile: '',
+    state: '',
+    district: '',
+    address: '',
+    aadhaar: '',
+  });
+
+  useEffect(() => {
+    console.log('location====>', location);
+    if (location?.state && location?.district) {
+      const id = generateHHId(location?.state, location?.district);
+      setHhId(id);
+    }
+  }, [location]);
+
+  const [errors, setErrors] = React.useState<any>({});
+  const [hhId, setHhId] = React.useState('');
+
+  const handleChange = (key: string, value: string) => {
+    setForm(prev => ({ ...prev, [key]: value }));
+
+    // remove error when typing
+    setErrors((prev: any) => ({ ...prev, [key]: '' }));
+  };
+
+  const validateForm = () => {
+    let newErrors: any = {};
+
+    if (!form.headName.trim()) {
+      newErrors.headName = 'Head name is required';
+    }
+
+    if (!form.mobile.trim()) {
+      newErrors.mobile = 'Mobile number is required';
+    } else if (!/^[6-9]\d{9}$/.test(form.mobile)) {
+      newErrors.mobile = 'Invalid mobile number';
+    }
+
+    // if (!form.state) {
+    //   newErrors.state = 'State is required';
+    // }
+
+    // if (!form.district) {
+    //   newErrors.district = 'District is required';
+    // }
+
+    if (!form.address.trim()) {
+      newErrors.address = 'Address is required';
+    }
+
+    if (!form.aadhaar) {
+      errors.aadhaar = 'Required';
+    } else if (form.aadhaar.length !== 12) {
+      errors.aadhaar = 'Aadhaar must be 12 digits';
+    }
+
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSave = () => {
+    if (!validateForm()) return;
+
+    const payload = {
+      ...form,
+      hhId,
+      latitude: location?.latitude,
+      longitude: location?.longitude,
+    };
+
+    console.log('FINAL DATA =>', payload);
+
+    navigation.navigate('AddMembers', { data: payload });
+  };
+  const formatAadhaar = (value: string) => {
+    // remove non-numeric
+    let cleaned = value.replace(/\D/g, '');
+
+    // limit to 12 digits
+    cleaned = cleaned.slice(0, 12);
+
+    // split into groups
+    const part1 = cleaned.slice(0, 4);
+    const part2 = cleaned.slice(4, 8);
+    const part3 = cleaned.slice(8, 12);
+
+    let result = '';
+
+    if (part1) result += part1;
+    if (part2) result += (result ? ' ' : '') + part2;
+    if (part3) result += (result ? ' ' : '') + part3;
+
+    return result.trim();
+  };
+
+  const handleAadhaarChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, '').slice(0, 12);
+
+    setForm(prev => ({
+      ...prev,
+      aadhaar: cleaned, // store original digits
+    }));
+
+    setErrors((prev: any) => ({ ...prev, aadhaar: '' }));
+  };
+
   return (
     <View style={styles.mainContainer}>
       {/* Header / Stepper Section */}
@@ -33,7 +175,7 @@ const HouseholdScreen = () => {
           </View>
           <View style={styles.headerRight}>
             <View style={styles.idBadge}>
-              <Text style={styles.idBadgeText}>HH-2024-1107</Text>
+              <Text style={styles.idBadgeText}>{hhId}</Text>
             </View>
             <View style={styles.gpsBadge}>
               <AppIcon
@@ -74,11 +216,23 @@ const HouseholdScreen = () => {
               <Text style={styles.cardHeader}>HOUSEHOLD IDENTITY</Text>
               <FormInput
                 label="Auto-generated ID"
-                value="HH-2024-DL-S12-1107"
+                value={hhId}
                 editable={false}
               />
-              <FormInput label="Head of Family *" value="Mohan Lal Sharma" />
-              <FormInput label="Mobile Number *" value="+91 98112 44521" />
+              <FormInput
+                label="Head of Family *"
+                placeholder={'Head of family'}
+                value={form.headName}
+                onChangeText={(val: string) => handleChange('headName', val)}
+                error={errors.headName}
+              />
+              <FormInput
+                label="Mobile Number *"
+                placeholder={'Mobile number'}
+                value={form.mobile}
+                onChangeText={(val: string) => handleChange('mobile', val)}
+                error={errors.mobile}
+              />
             </View>
 
             <View style={styles.card}>
@@ -93,7 +247,10 @@ const HouseholdScreen = () => {
               </View>
               <FormInput
                 label="Full Address"
-                value="B-42, Pushp Vihar, Saket, ND-110017"
+                placeholder={'Full Address'}
+                value={form.address}
+                onChangeText={(val: string) => handleChange('address', val)}
+                error={errors.address}
                 multiline
               />
             </View>
@@ -116,8 +273,12 @@ const HouseholdScreen = () => {
               </View>
               <FormInput
                 label="Aadhaar (masked)"
-                value="XXXX  XXXX  4821"
-                editable={false}
+                inputMode="numeric"
+                maxLength={14} // with spaces
+                placeholder="XXXX XXXX 1234"
+                value={formatAadhaar(form.aadhaar)}
+                onChangeText={handleAadhaarChange}
+                error={errors.aadhaar}
               />
               <View style={styles.verifiedBox}>
                 <AppIcon
@@ -139,7 +300,11 @@ const HouseholdScreen = () => {
               <View style={styles.mapPlaceholder}>
                 <View style={styles.mapDot} />
                 <View style={styles.coordsBadge}>
-                  <Text style={styles.coordsText}>28.5247°N 77.2066°E</Text>
+                  <Text
+                    style={styles.coordsText}
+                  >{`${location?.latitude.toFixed(
+                    4,
+                  )}°N ${location?.longitude.toFixed(4)}°E`}</Text>
                 </View>
               </View>
               <TouchableOpacity style={styles.gpsButton}>
@@ -177,7 +342,8 @@ const HouseholdScreen = () => {
         </TouchableOpacity>
         <TouchableOpacity
           style={styles.saveButton}
-          onPress={() => navigation.navigate('AddMembers')}
+          // onPress={() => navigation.navigate('AddMembers')}
+          onPress={handleSave}
         >
           <Text style={styles.saveButtonText}>Save & Continue →</Text>
         </TouchableOpacity>
@@ -190,19 +356,36 @@ const HouseholdScreen = () => {
 const FormInput = ({
   label,
   value,
+  inputMode,
+  maxLength,
+  placeholder,
   editable = true,
   isDropdown = false,
   multiline = false,
+  onChangeText,
+  error,
 }: any) => (
   <View style={styles.inputContainer}>
     <Text style={styles.label}>{label}</Text>
-    <View style={[styles.inputWrapper, !editable && styles.disabledInput]}>
+
+    <View
+      style={[
+        styles.inputWrapper,
+        !editable && styles.disabledInput,
+        error && { borderColor: 'red' },
+      ]}
+    >
       <TextInput
+        inputMode={inputMode}
         value={value}
         editable={editable}
+        placeholder={placeholder}
         multiline={multiline}
+        maxLength={maxLength}
         style={styles.inputText}
+        onChangeText={onChangeText}
       />
+
       {isDropdown && (
         <AppIcon
           type="Ionicons"
@@ -212,6 +395,8 @@ const FormInput = ({
         />
       )}
     </View>
+
+    {error && <Text style={{ color: 'red', fontSize: 11 }}>{error}</Text>}
   </View>
 );
 
