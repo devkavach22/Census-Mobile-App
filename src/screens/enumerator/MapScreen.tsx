@@ -11,6 +11,9 @@ import {
   TouchableOpacity,
   ViewStyle,
   StatusBar,
+  ScrollView,
+  FlatList,
+  Modal,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showToast } from '../../components/common/showToast';
@@ -273,7 +276,7 @@ const MapScreen = () => {
   ];
 
   const [region, setRegion] = useState(userDetails?.district?.name);
-  const [ward, setWard] = useState('Ward 12');
+  const [ward, setWard] = useState('');
   const [risk, setRisk] = useState('All Risk Levels');
   const [selectedMarker, setSelectedMarker] = useState(markers[1]);
   const [openDropdown, setOpenDropdown] = useState<string | null>(null);
@@ -288,12 +291,8 @@ const MapScreen = () => {
           const action: any = await dispatch(GetGeofiltersOptionsApi());
           const res = action?.payload?.data;
 
-          console.log('API DATA ===>', res);
-
           setDistricts(res?.districts || []);
           setWards(res?.wards || []);
-
-          // default selection
           if (res?.districts?.length > 0) {
             const firstDistrict = res.districts[0];
             setRegion(firstDistrict.name);
@@ -357,7 +356,7 @@ const MapScreen = () => {
       <View
         style={[
           styles.dropdownWrapper,
-          isOpen && { zIndex: 9999, elevation: 10 },
+          isOpen && { zIndex: 9999, elevation: 20 },
         ]}
       >
         {/* BUTTON */}
@@ -369,28 +368,47 @@ const MapScreen = () => {
           <Text numberOfLines={1} style={styles.dropdownText}>
             {value}
           </Text>
-          <AppIcon type="AntDesign" name={'down'} size={14} />
+
+          <AppIcon type="AntDesign" name="down" size={14} />
         </TouchableOpacity>
 
         {/* LIST */}
         {isOpen && (
-          <View style={styles.dropdownList}>
-            {options.map((item: string, index: number) => (
-              <TouchableOpacity
-                key={item}
-                style={[
-                  styles.dropdownItemRow,
-                  index === options.length - 1 && { borderBottomWidth: 0 },
-                ]}
-                onPress={() => {
-                  onSelect(item);
-                  setOpenDropdown(null);
-                }}
-              >
-                <Text style={styles.dropdownItem}>{item}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+          <Modal
+            transparent
+            visible={isOpen}
+            animationType="fade"
+            onRequestClose={() => setOpenDropdown(null)}
+          >
+            <TouchableOpacity
+              style={styles.modalOverlay}
+              activeOpacity={1}
+              onPress={() => setOpenDropdown(null)}
+            >
+              <View style={styles.modalDropdown}>
+                <FlatList
+                  data={options}
+                  keyExtractor={(item, index) => item + index}
+                  showsVerticalScrollIndicator
+                  nestedScrollEnabled
+                  initialNumToRender={20}
+                  maxToRenderPerBatch={20}
+                  windowSize={10}
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={styles.dropdownItemRow}
+                      onPress={() => {
+                        onSelect(item);
+                        setOpenDropdown(null);
+                      }}
+                    >
+                      <Text style={styles.dropdownItem}>{item}</Text>
+                    </TouchableOpacity>
+                  )}
+                />
+              </View>
+            </TouchableOpacity>
+          </Modal>
         )}
       </View>
     );
@@ -627,17 +645,23 @@ const styles = StyleSheet.create({
   },
   clusterBtnText: { color: '#0F172A', fontWeight: 'bold' },
 
-  filterBar: { flexDirection: 'row', padding: 15, alignItems: 'center' },
+  filterBar: {
+    flexDirection: 'row',
+    padding: 15,
+    alignItems: 'flex-start',
+    overflow: 'visible',
+    zIndex: 1000,
+  },
   dropdown: {
-    backgroundColor: 'white',
-    paddingHorizontal: 10,
-    paddingVertical: 10,
-    borderRadius: 10,
+    height: 50,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
+    borderColor: '#E5E7EB',
+    borderRadius: 10,
+    paddingHorizontal: 12,
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    backgroundColor: '#FFF',
   },
   legendContainer: { flexDirection: 'row', marginLeft: 'auto' },
   legend: {
@@ -661,7 +685,7 @@ const styles = StyleSheet.create({
     flex: 0.72,
     backgroundColor: '#D6E4F0',
     borderRadius: 20,
-    overflow: 'hidden',
+    overflow: 'visible',
     borderWidth: 1,
     borderColor: '#CBD5E1',
   },
@@ -754,15 +778,17 @@ const styles = StyleSheet.create({
     marginTop: 5,
   },
   dropdownWrapper: {
-    width: 140,
-    marginRight: 10,
+    width: '18%',
+    marginHorizontal: 5,
+    marginBottom: 12,
+    position: 'relative',
+    zIndex: 1000,
   },
-
   dropdownText: {
-    fontSize: 13,
-    fontFamily: FONTS.SemiBold,
-    color: '#0F172A',
+    fontSize: 14,
+    color: '#111',
     flex: 1,
+    marginRight: 8,
   },
 
   arrow: {
@@ -772,30 +798,51 @@ const styles = StyleSheet.create({
 
   dropdownList: {
     position: 'absolute',
-    top: 45,
-    width: '100%',
-    backgroundColor: 'white',
+    top: 55,
+    left: 0,
+    right: 0,
+
+    backgroundColor: '#FFF',
     borderRadius: 10,
     borderWidth: 1,
-    borderColor: '#E2E8F0',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 3 },
-    elevation: 8,
+    borderColor: '#E5E7EB',
+
+    height: 260, // 🔥 IMPORTANT (not maxHeight)
+    elevation: 20,
+    zIndex: 9999,
   },
 
   dropdownItemRow: {
-    paddingVertical: 10,
+    paddingVertical: 14,
     paddingHorizontal: 12,
     borderBottomWidth: 1,
-    borderBottomColor: '#F1F5F9',
+    borderBottomColor: '#F1F1F1',
   },
 
   dropdownItem: {
-    fontSize: 13,
-    color: '#334155',
-    fontFamily: FONTS.SemiBold,
+    fontSize: 14,
+    color: '#111',
+  },
+  dropdownScroll: {
+    maxHeight: 220,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  modalDropdown: {
+    width: '40%', // tablet friendly
+    maxHeight: '60%',
+
+    backgroundColor: '#FFF',
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+
+    elevation: 20,
   },
 });
 
