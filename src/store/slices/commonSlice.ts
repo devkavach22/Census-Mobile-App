@@ -247,6 +247,19 @@ export const GetDistrictsApi = createAsyncThunk(
   },
 );
 
+export const GetGeofiltersOptionsApi = createAsyncThunk(
+  'GetGeofiltersOptionsApi',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.GEO_FILTER_OPTIONS);
+      console.log('response====>', response);
+      return response.data;
+    } catch (error: any) {
+      return handleThunkError(error, rejectWithValue);
+    }
+  },
+);
+
 export const GetProfileApi = createAsyncThunk(
   'GetProfileApi',
   async (_, { rejectWithValue }) => {

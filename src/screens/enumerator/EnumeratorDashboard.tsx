@@ -94,7 +94,7 @@ const EnumeratorDashboard = () => {
               }`}</Text>
 
               <Text style={styles.userLocation}>
-                {`${userDetails.district},${userDetails.state}`}
+                {`${userDetails.district.name},${userDetails.state.name}`}
               </Text>
             </View>
           </View>
@@ -207,6 +207,7 @@ const EnumeratorDashboard = () => {
           <View style={styles.notificationsCard}>
             <Text style={styles.sectionTitle}>NOTIFICATIONS</Text>
             <ScrollView
+              nestedScrollEnabled
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 10 }}
             >

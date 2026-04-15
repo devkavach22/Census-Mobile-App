@@ -29,8 +29,12 @@ export const ENDPOINTS = {
   // MASTER APIs
   GET_STATES: '/api/master/states',
   GET_DISTRICTS: '/api/master/districts',
+  GET_VILLAGE_WARDS: '/api/master/village_wards?district_id',
 
   // PROFILE APIs
   GET_PROFILE: '/api/profile/get',
   UPDATE_PROFILE: '/api/profile/update',
+
+  //filters Apis
+  GEO_FILTER_OPTIONS: '/api/census/geo_filter_options',
 };

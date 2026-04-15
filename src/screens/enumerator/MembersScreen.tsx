@@ -61,7 +61,7 @@ const MembersScreen = () => {
   const [showEducationModal, setShowEducationModal] = useState(false);
   const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
   const [errors, setErrors] = useState<any>({});
-
+  
   const handleSave = async () => {
     const payload = {
       head_name: data.headName,
@@ -82,7 +82,7 @@ const MembersScreen = () => {
           age: m.age,
           gender: m.gender?.toLowerCase(),
           relationship: m.relation?.toLowerCase(),
-          education: m.education,
+          education: m.education?.toLowerCase(),
           aadhaar_raw: m.aadhaar_raw || '',
           aadhaar_verified: m.status === 'Verified',
           verification_status: m.status === 'Verified' ? 'verified' : 'pending',

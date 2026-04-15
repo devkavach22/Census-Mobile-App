@@ -1,39 +1,400 @@
-import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import {
+  useFocusEffect,
+  useIsFocused,
+  useNavigation,
+} from '@react-navigation/native';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
-  ScrollView,
-  Dimensions,
   ViewStyle,
   StatusBar,
 } from 'react-native';
-import { showMessage } from 'react-native-flash-message';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showToast } from '../../components/common/showToast';
+import { AuthContext } from '../../../App';
+import AppIcon from '../../components/common/AppIcon';
+import { FONTS } from '../../theme/fonts';
+import { GetGeofiltersOptionsApi } from '../../store/slices/commonSlice';
+import { useAppDispatch } from '../../store/hooks';
 
 const MapScreen = () => {
   const navigation = useNavigation<any>();
+  const { userDetails } = useContext(AuthContext);
+  const dispatch = useAppDispatch();
+  const IsFocused = useIsFocused();
   const markers = [
-    { id: 1, x: '21%', y: '15%', color: '#2E7D32' },
-    { id: 2, x: '32%', y: '20%', color: '#2E7D32' },
-    { id: 3, x: '42%', y: '25%', color: '#2E7D32' },
-    { id: 4, x: '26%', y: '30%', color: '#9333EA', active: true },
-    { id: 5, x: '35%', y: '40%', color: '#F59E0B' },
-    { id: 6, x: '16%', y: '48%', color: '#2E7D32' },
-    { id: 7, x: '26%', y: '58%', color: '#2E7D32' },
-    { id: 8, x: '45%', y: '55%', color: '#9333EA' },
-    { id: 9, x: '38%', y: '65%', color: '#DC2626' },
-    { id: 10, x: '50%', y: '75%', color: '#2E7D32' },
-    { id: 11, x: '63%', y: '35%', color: '#2E7D32' },
-    { id: 12, x: '53%', y: '20%', color: '#DC2626' },
-    { id: 13, x: '57%', y: '50%', color: '#2E7D32' },
-    { id: 14, x: '20%', y: '80%', color: '#DC2626' },
-    { id: 15, x: '61%', y: '70%', color: '#F59E0B' },
+    {
+      id: 1,
+      x: '21%',
+      y: '15%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1001',
+      head: 'Ramesh Patel',
+      risk: 22,
+      issue: null,
+    },
+    {
+      id: 4,
+      x: '26%',
+      y: '30%',
+      color: '#9333EA',
+      status: 'Flagged',
+      householdId: 'HH-1042',
+      head: 'Ramu Verma',
+      risk: 81,
+      issue: 'Duplicate Aadhaar · GPS overlap',
+    },
+    {
+      id: 7,
+      x: '26%',
+      y: '58%',
+      color: '#9333EA',
+      status: 'Flagged',
+      householdId: 'HH-2024-1089',
+      head: 'Suresh Mehta',
+      risk: 78,
+      issue: 'Duplicate Aadhaar · GPS overlap',
+    },
+    {
+      id: 9,
+      x: '38%',
+      y: '65%',
+      color: '#DC2626',
+      status: 'Pending',
+      householdId: 'HH-2024-1022',
+      head: 'Anita Sharma',
+      risk: 65,
+      issue: 'Verification pending',
+    },
+    {
+      id: 15,
+      x: '61%',
+      y: '70%',
+      color: '#F59E0B',
+      status: 'In-progress',
+      householdId: 'HH-2024-1033',
+      head: 'Vikas Singh',
+      risk: 45,
+      issue: 'Survey ongoing',
+    },
+
+    // --- NEW DATA ---
+    {
+      id: 16,
+      x: '12%',
+      y: '20%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1034',
+      head: 'Kiran Shah',
+      risk: 18,
+      issue: null,
+    },
+    {
+      id: 17,
+      x: '18%',
+      y: '35%',
+      color: '#DC2626',
+      status: 'Pending',
+      householdId: 'HH-2024-1035',
+      head: 'Mahesh Yadav',
+      risk: 60,
+      issue: 'Documents missing',
+    },
+    {
+      id: 18,
+      x: '30%',
+      y: '10%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1036',
+      head: 'Sunita Joshi',
+      risk: 15,
+      issue: null,
+    },
+    {
+      id: 19,
+      x: '40%',
+      y: '18%',
+      color: '#F59E0B',
+      status: 'In-progress',
+      householdId: 'HH-2024-1037',
+      head: 'Rahul Meena',
+      risk: 40,
+      issue: 'Survey ongoing',
+    },
+    {
+      id: 20,
+      x: '48%',
+      y: '28%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1038',
+      head: 'Neha Kapoor',
+      risk: 20,
+      issue: null,
+    },
+    {
+      id: 21,
+      x: '55%',
+      y: '40%',
+      color: '#9333EA',
+      status: 'Flagged',
+      householdId: 'HH-2024-1039',
+      head: 'Amit Tiwari',
+      risk: 85,
+      issue: 'Duplicate entry found',
+    },
+    {
+      id: 22,
+      x: '65%',
+      y: '25%',
+      color: '#DC2626',
+      status: 'Pending',
+      householdId: 'HH-2024-1040',
+      head: 'Pooja Singh',
+      risk: 70,
+      issue: 'Verification pending',
+    },
+    {
+      id: 23,
+      x: '70%',
+      y: '50%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1041',
+      head: 'Deepak Kumar',
+      risk: 25,
+      issue: null,
+    },
+    {
+      id: 24,
+      x: '75%',
+      y: '65%',
+      color: '#F59E0B',
+      status: 'In-progress',
+      householdId: 'HH-2024-1042',
+      head: 'Priya Verma',
+      risk: 50,
+      issue: 'Survey ongoing',
+    },
+    {
+      id: 25,
+      x: '80%',
+      y: '30%',
+      color: '#9333EA',
+      status: 'Flagged',
+      householdId: 'HH-2024-1043',
+      head: 'Nitin Arora',
+      risk: 88,
+      issue: 'GPS mismatch',
+    },
+    {
+      id: 26,
+      x: '10%',
+      y: '75%',
+      color: '#DC2626',
+      status: 'Pending',
+      householdId: 'HH-2024-1044',
+      head: 'Sanjay Gupta',
+      risk: 67,
+      issue: 'Incomplete data',
+    },
+    {
+      id: 27,
+      x: '22%',
+      y: '82%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1045',
+      head: 'Rekha Devi',
+      risk: 12,
+      issue: null,
+    },
+    {
+      id: 28,
+      x: '35%',
+      y: '78%',
+      color: '#F59E0B',
+      status: 'In-progress',
+      householdId: 'HH-2024-1046',
+      head: 'Ajay Mishra',
+      risk: 48,
+      issue: 'Survey ongoing',
+    },
+    {
+      id: 29,
+      x: '45%',
+      y: '85%',
+      color: '#9333EA',
+      status: 'Flagged',
+      householdId: 'HH-2024-1047',
+      head: 'Kavita Sharma',
+      risk: 82,
+      issue: 'Duplicate Aadhaar',
+    },
+    {
+      id: 30,
+      x: '58%',
+      y: '82%',
+      color: '#2E7D32',
+      status: 'Completed',
+      householdId: 'HH-2024-1048',
+      head: 'Manoj Jain',
+      risk: 19,
+      issue: null,
+    },
+    {
+      id: 31,
+      x: '68%',
+      y: '78%',
+      color: '#DC2626',
+      status: 'Pending',
+      householdId: 'HH-2024-1049',
+      head: 'Alok Verma',
+      risk: 72,
+      issue: 'Verification pending',
+    },
+    {
+      id: 32,
+      x: '78%',
+      y: '85%',
+      color: '#F59E0B',
+      status: 'In-progress',
+      householdId: 'HH-2024-1050',
+      head: 'Sneha Kulkarni',
+      risk: 55,
+      issue: 'Survey ongoing',
+    },
   ];
 
+  const [region, setRegion] = useState(userDetails?.district?.name);
+  const [ward, setWard] = useState('Ward 12');
+  const [risk, setRisk] = useState('All Risk Levels');
+  const [selectedMarker, setSelectedMarker] = useState(markers[1]);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [districts, setDistricts] = useState<any[]>([]);
+  const [wards, setWards] = useState<any[]>([]);
+  const [filteredWards, setFilteredWards] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (IsFocused) {
+      const fetchFilterOptions = async () => {
+        try {
+          const action: any = await dispatch(GetGeofiltersOptionsApi());
+          const res = action?.payload?.data;
+
+          console.log('API DATA ===>', res);
+
+          setDistricts(res?.districts || []);
+          setWards(res?.wards || []);
+
+          // default selection
+          if (res?.districts?.length > 0) {
+            const firstDistrict = res.districts[0];
+            setRegion(firstDistrict.name);
+
+            const wardList = res.wards.filter(
+              (w: any) => w.district_id === firstDistrict.id,
+            );
+
+            setFilteredWards(wardList);
+            setWard(wardList?.[0]?.name || '');
+          }
+        } catch (error) {
+          console.log(error);
+        }
+      };
+
+      fetchFilterOptions();
+    }
+  }, [IsFocused]);
+
+  const filteredMarkers = markers.filter(m => {
+    // Risk filter
+    if (risk === 'High Risk' && m.risk < 70) return false;
+
+    // Status filter (if needed)
+    if (risk === 'Completed' && m.status !== 'Completed') return false;
+
+    return true;
+  });
+
+  const counts = {
+    completed: markers.filter(m => m.status === 'Completed').length,
+    pending: markers.filter(m => m.status === 'Pending').length,
+    inProgress: markers.filter(m => m.status === 'In-progress').length,
+    flagged: markers.filter(m => m.status === 'Flagged').length,
+  };
+
+  const handleDistrictChange = (selectedName: string) => {
+    setRegion(selectedName);
+
+    const selectedDistrict = districts.find(d => d.name === selectedName);
+
+    if (selectedDistrict) {
+      const wardList = wards.filter(w => w.district_id === selectedDistrict.id);
+
+      setFilteredWards(wardList);
+      setWard(wardList?.[0]?.name || '');
+    }
+  };
+  const CommonDropDown = ({
+    value,
+    options,
+    type,
+    openDropdown,
+    setOpenDropdown,
+    onSelect,
+  }: any) => {
+    const isOpen = openDropdown === type;
+
+    return (
+      <View
+        style={[
+          styles.dropdownWrapper,
+          isOpen && { zIndex: 9999, elevation: 10 },
+        ]}
+      >
+        {/* BUTTON */}
+        <TouchableOpacity
+          activeOpacity={0.8}
+          style={styles.dropdown}
+          onPress={() => setOpenDropdown(isOpen ? null : type)}
+        >
+          <Text numberOfLines={1} style={styles.dropdownText}>
+            {value}
+          </Text>
+          <AppIcon type="AntDesign" name={'down'} size={14} />
+        </TouchableOpacity>
+
+        {/* LIST */}
+        {isOpen && (
+          <View style={styles.dropdownList}>
+            {options.map((item: string, index: number) => (
+              <TouchableOpacity
+                key={item}
+                style={[
+                  styles.dropdownItemRow,
+                  index === options.length - 1 && { borderBottomWidth: 0 },
+                ]}
+                onPress={() => {
+                  onSelect(item);
+                  setOpenDropdown(null);
+                }}
+              >
+                <Text style={styles.dropdownItem}>{item}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+      </View>
+    );
+  };
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar translucent barStyle="default" />
@@ -43,7 +404,7 @@ const MapScreen = () => {
           style={styles.backBtn}
           onPress={() => navigation.goBack()}
         >
-          <Text style={{ color: 'white' }}>←</Text>
+          <AppIcon type="Ionicons" name="arrow-back" size={20} color="#fff" />
         </TouchableOpacity>
         <View style={styles.headerTitleContainer}>
           <Text style={styles.headerTitle}>🗺️ Geo-tagged Household Map</Text>
@@ -63,15 +424,32 @@ const MapScreen = () => {
 
       {/* FILTER BAR */}
       <View style={styles.filterBar}>
-        <View style={styles.dropdown}>
-          <Text>South Delhi ⌄</Text>
-        </View>
-        <View style={styles.dropdown}>
-          <Text>Ward 12 ⌄</Text>
-        </View>
-        <View style={styles.dropdown}>
-          <Text>All Risk Levels ⌄</Text>
-        </View>
+        <CommonDropDown
+          type="region"
+          value={region}
+          options={districts.map(d => d.name)}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+          onSelect={handleDistrictChange}
+        />
+
+        <CommonDropDown
+          type="ward"
+          value={ward}
+          options={filteredWards.map(w => w.name)}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+          onSelect={setWard}
+        />
+
+        <CommonDropDown
+          type="risk"
+          value={risk}
+          options={['All Risk Levels', 'High Risk', 'Completed']}
+          openDropdown={openDropdown}
+          setOpenDropdown={setOpenDropdown}
+          onSelect={setRisk}
+        />
 
         <View style={styles.legendContainer}>
           <Text
@@ -80,31 +458,34 @@ const MapScreen = () => {
               { color: '#10B981', backgroundColor: '#ECFDF5' },
             ]}
           >
-            ● Completed (31)
+            ● Completed ({counts.completed})
           </Text>
+
           <Text
             style={[
               styles.legend,
               { color: '#EF4444', backgroundColor: '#FEF2F2' },
             ]}
           >
-            ● Pending (12)
+            ● Pending ({counts.pending})
           </Text>
+
           <Text
             style={[
               styles.legend,
               { color: '#F59E0B', backgroundColor: '#FFFBEB' },
             ]}
           >
-            ● In-progress (3)
+            ● In-progress ({counts.inProgress})
           </Text>
+
           <Text
             style={[
               styles.legend,
               { color: '#8B5CF6', backgroundColor: '#F5F3FF' },
             ]}
           >
-            ● Flagged (2)
+            ● Flagged ({counts.flagged})
           </Text>
         </View>
       </View>
@@ -129,21 +510,21 @@ const MapScreen = () => {
             ))}
 
             {/* Map Markers */}
-            {markers.map(m => {
-              // Define the dynamic style object explicitly
+            {filteredMarkers.map(m => {
               const dynamicMarkerStyle: ViewStyle = {
-                left: m.x as any, // 'any' or 'DimensionValue' bypasses the strict string check
+                left: m.x as any,
                 top: m.y as any,
                 backgroundColor: m.color,
               };
 
               return (
-                <View
+                <TouchableOpacity
                   key={m.id}
+                  onPress={() => setSelectedMarker(m)}
                   style={[
                     styles.dot,
                     dynamicMarkerStyle,
-                    m.active && styles.dotActive,
+                    selectedMarker?.id === m.id && styles.dotActive,
                   ]}
                 />
               );
@@ -159,23 +540,35 @@ const MapScreen = () => {
         <View style={styles.sidebar}>
           {/* Household Card */}
           <View style={styles.cardFlagged}>
-            <Text style={styles.cardId}>● HH-2024-1089 · Flagged</Text>
+            <Text style={styles.cardId}>
+              ● {selectedMarker.householdId} · {selectedMarker.status}
+            </Text>
+
             <View style={styles.cardContent}>
               <Text style={styles.infoLabel}>
-                Head: <Text style={styles.infoValue}>Suresh Mehta</Text>
+                Head:<Text style={styles.infoValue}>{selectedMarker.head}</Text>
               </Text>
+
               <Text style={styles.infoLabel}>
-                Status: <Text style={styles.infoValue}>Flagged</Text>
+                Status:
+                <Text style={styles.infoValue}>{selectedMarker.status}</Text>
               </Text>
+
               <Text style={styles.infoLabel}>
-                Risk: <Text style={styles.riskValue}>High (78/100)</Text>
+                Risk:
+                <Text style={styles.riskValue}>
+                  {selectedMarker.risk >= 70 ? 'High' : 'Medium'} (
+                  {selectedMarker.risk}/100)
+                </Text>
               </Text>
             </View>
-            <View style={styles.alertBox}>
-              <Text style={styles.alertText}>
-                ⚠️ Duplicate Aadhaar · GPS overlap
-              </Text>
-            </View>
+
+            {selectedMarker.issue && (
+              <View style={styles.alertBox}>
+                <Text style={styles.alertText}>⚠️ {selectedMarker.issue}</Text>
+              </View>
+            )}
+
             <TouchableOpacity
               style={styles.viewDetailsBtn}
               onPress={() => navigation.navigate('Verification')}
@@ -237,12 +630,14 @@ const styles = StyleSheet.create({
   filterBar: { flexDirection: 'row', padding: 15, alignItems: 'center' },
   dropdown: {
     backgroundColor: 'white',
-    padding: 8,
-    borderRadius: 8,
+    paddingHorizontal: 10,
+    paddingVertical: 10,
+    borderRadius: 10,
     borderWidth: 1,
     borderColor: '#E2E8F0',
-    marginRight: 10,
-    minWidth: 120,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   legendContainer: { flexDirection: 'row', marginLeft: 'auto' },
   legend: {
@@ -357,6 +752,50 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     color: '#0F172A',
     marginTop: 5,
+  },
+  dropdownWrapper: {
+    width: 140,
+    marginRight: 10,
+  },
+
+  dropdownText: {
+    fontSize: 13,
+    fontFamily: FONTS.SemiBold,
+    color: '#0F172A',
+    flex: 1,
+  },
+
+  arrow: {
+    fontSize: 12,
+    color: '#64748B',
+  },
+
+  dropdownList: {
+    position: 'absolute',
+    top: 45,
+    width: '100%',
+    backgroundColor: 'white',
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 3 },
+    elevation: 8,
+  },
+
+  dropdownItemRow: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F1F5F9',
+  },
+
+  dropdownItem: {
+    fontSize: 13,
+    color: '#334155',
+    fontFamily: FONTS.SemiBold,
   },
 });
 

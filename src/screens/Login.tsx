@@ -63,8 +63,8 @@ const Login = () => {
       const loginData = {
         name: userData.name,
         userId: userData.user_id,
-        district: userData?.district,
-        state: userData?.state,
+        district: { name: userData?.district, id: userData?.district_id },
+        state: { name: userData?.state, id: userData?.state_id },
         role: userData?.user_type,
         loginType: userData?.login_type,
         mobile: userData?.mobile,

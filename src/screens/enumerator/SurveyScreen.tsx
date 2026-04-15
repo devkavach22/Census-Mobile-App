@@ -28,7 +28,7 @@ const SummaryScreen = () => {
     if (currentStep > 0) {
       setCurrentStep(prev => prev - 1);
     } else {
-      navigation.goBack();
+      navigation.navigate('EnumeratorDashboard');
     }
   };
 
