@@ -15,14 +15,18 @@ import { setStorageData, STORAGE_KEYS } from '../utils/storage';
 import { AuthContext } from '../../App';
 import { showToast } from '../components/common/showToast';
 import {
+  ForgotPasswordApi,
   LoginWithAadhaarApi,
   LoginWithPasswordApi,
   LoginWithSendOtpApi,
   LoginWithVerifyOtpApi,
+  ResetPasswordApi,
 } from '../store/slices/commonSlice';
 import { useAppDispatch } from '../store/hooks';
 import { showMessage } from 'react-native-flash-message';
 import { useSelector } from 'react-redux';
+import ForgotPasswordModal from '../components/ForgotPasswordModal';
+import ConfromForgotPasswordModal from '../components/ConfromForgotPasswordModal';
 
 const { width } = Dimensions.get('window');
 
@@ -40,6 +44,7 @@ const Login = () => {
   const [selectedRole, setSelectedRole] = useState('Enumerator');
   const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
+  const [showPass, setShowPass] = useState(false);
   const [aadhaar, setAadhaar] = useState('');
   const inputs = useRef<Array<TextInput | null>>([]);
   const mobileRef = useRef<TextInput | null>(null);
@@ -51,7 +56,9 @@ const Login = () => {
   const [timer, setTimer] = useState(60);
   const timerRef = useRef<any>(null);
   const { isLogin, userData } = useSelector((state: any) => state.common);
-
+  const [modalVisible, setModalVisible] = useState(false);
+  const [conModalVisible, setConModalVisible] = useState(false);
+  const [forgotMobile, setForgotMobile] = useState('');
   const ROLE_MAP: any = {
     Enumerator: 'enumerator',
     'District Admin': 'district_admin',
@@ -294,6 +301,19 @@ const Login = () => {
     }
   };
 
+  const onVerify = async () => {
+    const payload = { mobile: forgotMobile, user_type: ROLE_MAP[selectedRole] };
+    const result: any = await dispatch(ForgotPasswordApi(payload));
+    if (result.payload.status === 'success') {
+      setModalVisible(false);
+      setTimeout(() => {
+        setConModalVisible(true);
+      }, 2000);
+    } else {
+      setModalVisible(false);
+    }
+  };
+
   return (
     <KeyboardWrapper>
       <SafeAreaView style={styles.container}>
@@ -452,13 +472,28 @@ const Login = () => {
             <>
               <Text style={styles.label}>Enter Password</Text>
 
-              <TextInput
-                value={password}
-                placeholder="Enter password"
-                secureTextEntry
-                style={styles.input}
-                onChangeText={text => setPassword(text)}
-              />
+              <View style={styles.passwordContainer}>
+                <TextInput
+                  value={password}
+                  placeholder="Enter password"
+                  secureTextEntry={!showPass}
+                  style={styles.passwordInput}
+                  onChangeText={text => setPassword(text)}
+                  placeholderTextColor="#999"
+                />
+
+                <TouchableOpacity
+                  style={styles.eyeButton}
+                  onPress={() => setShowPass(!showPass)}
+                >
+                  <AppIcon
+                    type="Ionicons"
+                    name={showPass ? 'eye-off' : 'eye'}
+                    size={20}
+                    color="#888"
+                  />
+                </TouchableOpacity>
+              </View>
             </>
           )}
 
@@ -481,10 +516,25 @@ const Login = () => {
             <AppIcon type="Feather" name="lock" size={18} color="#FFF" />
             <Text style={styles.loginText}> Secure Login</Text>
           </TouchableOpacity>
-
-          <Text style={styles.forgot}>Forgot password?</Text>
+          <TouchableOpacity onPress={() => setModalVisible(true)}>
+            <Text style={styles.forgot}>Forgot password?</Text>
+          </TouchableOpacity>
         </View>
       </SafeAreaView>
+      <ForgotPasswordModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        mobile={forgotMobile}
+        setMobile={setForgotMobile}
+        onVerify={onVerify}
+        onBackToLogin={() => setModalVisible(false)}
+      />
+      <ConfromForgotPasswordModal
+        visible={conModalVisible}
+        onClose={() => setConModalVisible(false)}
+        forgotMobile={forgotMobile}
+        setForgotMobile={setForgotMobile}
+      />
     </KeyboardWrapper>
   );
 };
@@ -710,6 +760,30 @@ const styles = StyleSheet.create({
     color: '#2563EB',
     fontSize: 16,
     fontFamily: FONTS.Medium,
+  },
+  passwordContainer: {
+    position: 'relative',
+    width: '100%',
+  },
+  passwordInput: {
+    height: 52,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    borderRadius: 10,
+    marginBottom: 20,
+    padding: 14,
+    paddingRight: 45, // space for eye icon
+    fontSize: 15,
+    color: '#111827',
+    fontFamily: FONTS.Regular,
+    backgroundColor: '#FFF',
+  },
+
+  eyeButton: {
+    position: 'absolute',
+    right: 14,
+    top: '38%',
+    transform: [{ translateY: -10 }],
   },
 });
 
