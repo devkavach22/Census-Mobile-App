@@ -15,6 +15,8 @@ interface ReportState {
   profile: any;
   DashboardStatesData: any;
   DistrictDashboardData: any;
+  StateDashboardData: any;
+  NationalDashboardData: any;
   isLogin: boolean;
   loading: boolean;
   error: string | null;
@@ -26,6 +28,8 @@ const initialState: ReportState = {
   userData: null,
   DashboardStatesData: [],
   DistrictDashboardData: {},
+  StateDashboardData: {},
+  NationalDashboardData: {},
   notifications: [],
   SurveryQuestionData: [],
   geoData: [],
@@ -312,6 +316,30 @@ export const GetDistrictDashboardApi = createAsyncThunk(
   },
 );
 
+export const GetStateDashboardApi = createAsyncThunk(
+  'GetStateDashboardApi',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.STATE_DASHBOARD);
+      return response.data.data;
+    } catch (error: any) {
+      return handleThunkError(error, rejectWithValue);
+    }
+  },
+);
+
+export const GetNationalDashboardApi = createAsyncThunk(
+  'GetNationalDashboardApi',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.NATIONAL_DASHBOARD);
+      return response.data.data;
+    } catch (error: any) {
+      return handleThunkError(error, rejectWithValue);
+    }
+  },
+);
+
 // ============================
 // Slice
 // ============================
@@ -404,6 +432,20 @@ const commonSlice = createSlice({
         GetDistrictDashboardApi.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.DistrictDashboardData = action.payload;
+        },
+      )
+
+      .addCase(
+        GetStateDashboardApi.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.StateDashboardData = action.payload;
+        },
+      )
+
+      .addCase(
+        GetNationalDashboardApi.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.NationalDashboardData = action.payload;
         },
       )
 

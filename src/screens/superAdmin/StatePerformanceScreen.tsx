@@ -1,29 +1,62 @@
-import { useNavigation } from '@react-navigation/native';
-import React from 'react';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   ScrollView,
   TouchableOpacity,
-  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { showToast } from '../../components/common/showToast';
+import { useAppDispatch } from '../../store/hooks';
+import { useSelector } from 'react-redux';
+import { GetStateDashboardApi } from '../../store/slices/commonSlice';
+import { FONTS } from '../../theme/fonts';
 
 const StatePerformanceScreen = () => {
   const navigation = useNavigation<any>();
+  const dispatch = useAppDispatch();
+  const isFocused = useIsFocused();
+
+  const { StateDashboardData } = useSelector((state: any) => state.common);
+
+  /* ---------------- API CALL ---------------- */
+  useEffect(() => {
+    if (isFocused) {
+      dispatch(GetStateDashboardApi());
+    }
+  }, [isFocused]);
+
+  /* ---------------- DATA EXTRACTION ---------------- */
+  const data = StateDashboardData || {};
+  const topStats = data.top_stats || {};
+  const fraud = data.fraud_panel || {};
+  const rankings = data.district_ranking?.ranking || [];
+  const risks = data.high_risk_districts?.high_risk_districts || [];
+
+  /* remove duplicates + sort */
+  const uniqueRankings = Array.from(
+    new Map(rankings.map((item: any) => [item.name, item])).values(),
+  );
+
+  const sortedRankings = uniqueRankings.sort(
+    (a: any, b: any) => b.raw_rate - a.raw_rate,
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header Section */}
+      {/* Header */}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <View style={styles.titleRow}>
             <Text style={styles.emojiIcon}>🏢</Text>
-            <Text style={styles.title}>State Dashboard — Delhi</Text>
+            <Text style={styles.title}>
+              State Dashboard — {data?.state_name || '-'}
+            </Text>
           </View>
           <Text style={styles.subtitle}>
-            Anita Verma, State Director · Real-time
+            {data?.admin_name || '-'} · State Director · Real-time
           </Text>
         </View>
 
@@ -42,122 +75,104 @@ const StatePerformanceScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
+
       <ScrollView style={styles.container}>
-        {/* Top Summary Cards */}
+        {/* Summary Cards */}
         <View style={styles.summaryRow}>
           <SummaryCard
             label="DISTRICTS"
-            value="11/11"
-            subValue="100% onboarded"
+            value={topStats?.districts?.label || '-'}
+            subValue={topStats?.districts?.percentage_label || ''}
           />
           <SummaryCard
             label="HOUSEHOLDS"
-            value="34.8L"
-            subValue="Surveyed so far"
+            value={topStats?.households?.count || '-'}
+            subValue={topStats?.households?.subtext || ''}
           />
           <SummaryCard
             label="COMPLETION"
-            value="73.2%"
-            subValue="↑ 4.1% this week"
+            value={topStats?.completion?.completion_rate || '-'}
+            subValue={topStats?.completion?.trend || ''}
             highlightColor="#10B981"
           />
           <SummaryCard
             label="RISK ALERTS"
-            value="1,248"
-            subValue="5 districts"
+            value={topStats?.risk_alerts?.alert_count || '-'}
+            subValue={topStats?.risk_alerts?.affected_districts || ''}
             highlightColor="#EF4444"
           />
         </View>
 
-        {/* Main Content Body */}
+        {/* Main Grid */}
         <View style={styles.mainGrid}>
-          {/* Left Column: Verification & High Risk */}
+          {/* Left */}
           <View style={styles.leftCol}>
+            {/* Fraud Panel */}
             <View style={styles.card}>
               <Text style={styles.cardTitle}>VERIFICATION & FRAUD PANEL</Text>
+
               <ProgressBar
                 label="Verified"
-                value={68}
+                value={parseInt(fraud?.verified_p || 0)}
                 color="#10B981"
                 icon="✅"
               />
               <ProgressBar
                 label="Pending"
-                value={24}
+                value={parseInt(fraud?.pending_p || 0)}
                 color="#F59E0B"
                 icon="⏳"
               />
               <ProgressBar
                 label="Flagged"
-                value={8}
+                value={parseInt(fraud?.flagged_p || 0)}
                 color="#EF4444"
                 icon="🚩"
               />
             </View>
 
+            {/* High Risk */}
             <View style={[styles.card, { marginTop: 16 }]}>
               <Text style={styles.cardTitle}>HIGH-RISK DISTRICTS</Text>
-              <RiskItem
-                label="East Delhi"
-                value="412 flags"
-                color="#FEE2E2"
-                textColor="#B91C1C"
-              />
-              <RiskItem
-                label="North East Delhi"
-                value="286 flags"
-                color="#FEF3C7"
-                textColor="#B45309"
-              />
-              <RiskItem
-                label="Outer Delhi"
-                value="#FEF3C7"
-                valueText="194 flags"
-                textColor="#B45309"
-              />
+
+              {risks.length > 0 ? (
+                risks.map((item: any, index: number) => (
+                  <RiskItem
+                    key={index}
+                    label={item.name}
+                    valueText={item.flags}
+                    color="#FEE2E2"
+                    textColor="#B91C1C"
+                  />
+                ))
+              ) : (
+                <Text>No high-risk districts</Text>
+              )}
             </View>
           </View>
 
-          {/* Right Column: District Ranking */}
+          {/* Right */}
           <View style={styles.rightCol}>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>DISTRICT RANKING</Text>
-              <RankingRow
-                rank="1"
-                name="New Delhi"
-                percentage="94%"
-                color="#10B981"
-              />
-              <RankingRow
-                rank="2"
-                name="South Delhi"
-                percentage="87%"
-                color="#10B981"
-              />
-              <RankingRow
-                rank="3"
-                name="West Delhi"
-                percentage="79%"
-                color="#3B82F6"
-              />
-              <RankingRow
-                rank="4"
-                name="North Delhi"
-                percentage="71%"
-                color="#3B82F6"
-              />
-              <RankingRow
-                rank="5"
-                name="East Delhi"
-                percentage="52%"
-                color="#F59E0B"
-              />
-              <RankingRow
-                rank="6"
-                name="NE Delhi"
-                percentage="41%"
-                color="#EF4444"
-              />
+
+              {sortedRankings.slice(0, 6).map((item: any, index: number) => {
+                let color = '#EF4444';
+
+                if (item.raw_rate >= 75) color = '#10B981';
+                else if (item.raw_rate >= 50) color = '#3B82F6';
+                else if (item.raw_rate >= 25) color = '#F59E0B';
+
+                return (
+                  <RankingRow
+                    key={index}
+                    rank={(index + 1).toString()}
+                    name={item.name}
+                    percentage={`${item.raw_rate}%`}
+                    color={color}
+                  />
+                );
+              })}
 
               <TouchableOpacity
                 style={styles.nationalButton}
@@ -173,7 +188,7 @@ const StatePerformanceScreen = () => {
   );
 };
 
-// --- Helper Components ---
+/* ---------------- COMPONENTS ---------------- */
 
 const SummaryCard = ({
   label,
@@ -210,10 +225,7 @@ const RankingRow = ({ rank, name, percentage, color }: any) => (
     <Text style={styles.rankName}>{name}</Text>
     <View style={styles.rankTrack}>
       <View
-        style={[
-          styles.rankBar,
-          { width: `${percentage}`, backgroundColor: color } as any,
-        ]}
+        style={[styles.rankBar, { width: percentage, backgroundColor: color }]}
       />
     </View>
     <View style={[styles.rankBadge, { backgroundColor: `${color}20` }]}>
@@ -231,11 +243,12 @@ const RiskItem = ({ label, valueText, color, textColor }: any) => (
   </View>
 );
 
-// --- Styles ---
+/* ---------------- STYLES ---------------- */
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: '#0F172A' },
   container: { flex: 1, backgroundColor: '#F3F4F6', padding: 24 },
+
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -244,36 +257,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 16,
   },
-  title: { fontSize: 24, fontWeight: 'bold', color: '#fff' },
-  subtitle: { fontSize: 14, color: '#6B7280' },
+
+  title: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    fontFamily: FONTS.Bold,
+    color: '#fff',
+  },
+  subtitle: { fontSize: 14, fontFamily: FONTS.Bold, color: '#fff' },
 
   summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     marginBottom: 24,
   },
-  headerLeft: {
-    flexDirection: 'column',
-  },
-  titleRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+
+  headerLeft: { flexDirection: 'column' },
+  titleRow: { flexDirection: 'row', alignItems: 'center', paddingBottom: 10 },
+
   emojiIcon: {
     fontSize: 18,
     marginRight: 8,
-    backgroundColor: '#334155', // Slight background for icon
+    backgroundColor: '#334155',
     borderRadius: 4,
     padding: 2,
   },
-  headerRight: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
+
+  headerRight: { flexDirection: 'row', alignItems: 'center' },
+
   dropdownButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: 'rgba(255, 255, 255, 0.05)',
+    backgroundColor: 'rgba(255,255,255,0.05)',
     borderWidth: 1,
     borderColor: '#334155',
     paddingHorizontal: 12,
@@ -281,102 +296,112 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     marginRight: 12,
   },
-  dropdownText: {
-    color: '#FFFFFF',
-    fontSize: 14,
-    fontWeight: '500',
-    marginRight: 8,
-  },
-  dropdownArrow: {
-    color: '#FFFFFF',
-    fontSize: 12,
-  },
+
+  dropdownText: { color: '#fff', marginRight: 8 },
+  dropdownArrow: { color: '#fff' },
+
   exportButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#F8FAFC', // Light background for Export
+    backgroundColor: '#F8FAFC',
     paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
   },
+  progressLabel: {
+    fontSize: 14,
+    paddingVertical: 10,
+    fontFamily: FONTS.Bold,
+    color: '#4B5563',
+  },
+
+  progressValue: {
+    fontWeight: 'bold',
+    fontSize: 14,
+  },
+
   exportIcon: {
     fontSize: 14,
     marginRight: 6,
   },
-  exportText: {
-    color: '#0F172A',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  riskValue: {
-    fontWeight: '700',
-    fontSize: 14,
-  },
+
+  exportText: { color: '#0F172A', fontWeight: 'bold' },
+
   summaryCard: {
     flex: 1,
     backgroundColor: '#FFF',
     padding: 16,
     borderRadius: 12,
     marginRight: 12,
-    elevation: 2,
   },
-  labelSmall: { fontSize: 12, color: '#6B7280', fontWeight: '600' },
-  valueLarge: { fontSize: 28, fontWeight: 'bold', marginVertical: 4 },
-  subValue: { fontSize: 12, color: '#9CA3AF' },
+
+  labelSmall: {
+    fontSize: 12,
+    paddingBottom: 5,
+    color: '#6B7280',
+    fontFamily: FONTS.Bold,
+  },
+  valueLarge: {
+    fontSize: 28,
+    paddingBottom: 5,
+    fontWeight: 'bold',
+    fontFamily: FONTS.Bold,
+  },
+  subValue: { fontSize: 12, color: '#9CA3AF', fontFamily: FONTS.Bold },
 
   mainGrid: { flexDirection: 'row' },
   leftCol: { flex: 1, marginRight: 16 },
   rightCol: { flex: 1 },
+
   card: {
     backgroundColor: '#FFF',
     borderRadius: 12,
     padding: 20,
-    elevation: 2,
-  },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: '700',
-    color: '#374151',
-    marginBottom: 16,
   },
 
+  cardTitle: { fontWeight: '700', marginBottom: 16 },
+
   progressContainer: { marginBottom: 16 },
+
   progressHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: 6,
   },
-  progressLabel: { fontSize: 14, color: '#4B5563' },
-  progressValue: { fontWeight: 'bold' },
+
   track: {
     height: 8,
     backgroundColor: '#E5E7EB',
     borderRadius: 4,
-    overflow: 'hidden',
   },
-  bar: { height: '100%', borderRadius: 4 },
 
-  rankingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 18 },
-  rankNum: { width: 24, fontWeight: 'bold', color: '#10B981' },
-  rankName: { flex: 1, fontSize: 14, color: '#374151' },
+  bar: { height: '100%' },
+
+  rankingRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 16 },
+  rankNum: { width: 24, fontWeight: 'bold' },
+  rankName: { flex: 1 },
+
   rankTrack: {
     flex: 1,
     height: 6,
     backgroundColor: '#E5E7EB',
-    borderRadius: 3,
-    marginHorizontal: 12,
+    marginHorizontal: 10,
   },
-  rankBar: { height: '100%', borderRadius: 3 },
-  rankBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+
+  rankBar: { height: '100%' },
+
+  rankBadge: { paddingHorizontal: 6, paddingVertical: 2 },
 
   riskItem: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
     marginBottom: 8,
   },
+
   riskLabel: { fontWeight: '600' },
+  riskValue: { fontWeight: '700' },
+
   nationalButton: {
     backgroundColor: '#1E40AF',
     padding: 12,
@@ -384,6 +409,7 @@ const styles = StyleSheet.create({
     marginTop: 10,
     alignItems: 'center',
   },
+
   nationalButtonText: { color: '#FFF', fontWeight: 'bold' },
 });
 

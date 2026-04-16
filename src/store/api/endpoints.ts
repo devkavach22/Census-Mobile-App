@@ -44,4 +44,10 @@ export const ENDPOINTS = {
 
   //district Apis
   DISTRICT_DASHBOARD: '/api/census/admin/district_dashboard',
+
+  //state Apis
+  STATE_DASHBOARD: '/api/census/admin/state_dashboard',
+
+  //National Apis
+  NATIONAL_DASHBOARD: '/api/census/admin/stats/national',
 };

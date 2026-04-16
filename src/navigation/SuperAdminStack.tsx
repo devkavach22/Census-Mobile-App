@@ -38,23 +38,23 @@ const Stack = createNativeStackNavigator<SuperAdminStackParamList>();
 const SuperAdminStack = () => {
   return (
     <Stack.Navigator
-      initialRouteName="NationalDashboard"
+      initialRouteName="StatePerformance"
       screenOptions={{
         headerShown: false,
       }}
     >
-      {/* NATIONAL DASHBOARD */}
-
-      <Stack.Screen
-        name="NationalDashboard"
-        component={NationalDashboardScreen}
-      />
-
       {/* STATE PERFORMANCE */}
 
       <Stack.Screen
         name="StatePerformance"
         component={StatePerformanceScreen}
+      />
+
+      {/* NATIONAL DASHBOARD */}
+
+      <Stack.Screen
+        name="NationalDashboard"
+        component={NationalDashboardScreen}
       />
 
       {/* DISTRICT PERFORMANCE */}

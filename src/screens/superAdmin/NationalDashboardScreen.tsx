@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
   Text,
   View,
@@ -7,13 +7,17 @@ import {
   TouchableOpacity,
 } from 'react-native';
 import { showToast } from '../../components/common/showToast';
-import { useNavigation } from '@react-navigation/native';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AppIcon from '../../components/common/AppIcon';
 import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
 import { AuthContext } from '../../../App';
-import { updateState } from '../../store/slices/commonSlice';
+import {
+  GetNationalDashboardApi,
+  updateState,
+} from '../../store/slices/commonSlice';
 import { useAppDispatch } from '../../store/hooks';
+import { useSelector } from 'react-redux';
 
 // --- DATA CONSTANTS ---
 const COLORS = {
@@ -179,6 +183,15 @@ const NationalDashboardScreen = () => {
   const navigation = useNavigation<any>();
   const { setUserDetails } = useContext(AuthContext);
   const dispatch = useAppDispatch();
+  const { NationalDashboardData } = useSelector((state: any) => state.common);
+  const isFocused = useIsFocused();
+
+  /* ---------------- API CALL ---------------- */
+  useEffect(() => {
+    if (isFocused) {
+      dispatch(GetNationalDashboardApi());
+    }
+  }, [isFocused]);
 
   const logOut = async () => {
     // 1. Clear storage
@@ -194,6 +207,7 @@ const NationalDashboardScreen = () => {
     );
     setUserDetails(null);
   };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.header}>
