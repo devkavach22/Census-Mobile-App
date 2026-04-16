@@ -7,6 +7,7 @@ interface ReportState {
   token: string | null;
   userData: any;
   notifications: any;
+  SurveryQuestionData: any;
   geoData: any;
   states: any;
   districts: any;
@@ -24,6 +25,7 @@ const initialState: ReportState = {
   userData: null,
   DashboardStatesData: [],
   notifications: [],
+  SurveryQuestionData: [],
   geoData: [],
   states: [],
   districts: [],
@@ -195,11 +197,11 @@ export const GetGeoDataApi = createAsyncThunk(
   },
 );
 
-export const SaveDraftApi = createAsyncThunk(
-  'SaveDraftApi',
+export const SurveySubmitApi = createAsyncThunk(
+  'SurveySubmitApi',
   async (payload: any, { rejectWithValue }) => {
     try {
-      const response = await api.post(ENDPOINTS.SAVE_DRAFT, payload);
+      const response = await api.post(ENDPOINTS.SURVEY_SUBMIT, payload);
       return response.data;
     } catch (error: any) {
       return handleThunkError(error, rejectWithValue);
@@ -275,6 +277,20 @@ export const UpdateProfileApi = createAsyncThunk(
   async (payload: any, { rejectWithValue }) => {
     try {
       const response = await api.post(ENDPOINTS.UPDATE_PROFILE, payload);
+      return response.data;
+    } catch (error: any) {
+      return handleThunkError(error, rejectWithValue);
+    }
+  },
+);
+
+export const GetSurveyQuestionsApi = createAsyncThunk(
+  'GetSurveyQuestionsApi',
+  async (payload: any, { rejectWithValue }) => {
+    try {
+      const response = await api.get(
+        `${ENDPOINTS.GET_SURVEY_QUESTIONS}${payload.id}`,
+      );
       return response.data;
     } catch (error: any) {
       return handleThunkError(error, rejectWithValue);
@@ -374,6 +390,10 @@ const commonSlice = createSlice({
         state.notifications = action.payload.data;
       })
 
+      .addCase(GetSurveyQuestionsApi.fulfilled, (state, action) => {
+        state.SurveryQuestionData = action.payload.data;
+      })
+
       .addCase(GetGeoDataApi.fulfilled, (state, action) => {
         state.geoData = action.payload.data;
       })
@@ -402,7 +422,7 @@ const commonSlice = createSlice({
         state.success = action.payload.message;
       })
 
-      .addCase(SaveDraftApi.fulfilled, (state, action) => {
+      .addCase(SurveySubmitApi.fulfilled, (state, action) => {
         state.success = action.payload.message;
       })
 

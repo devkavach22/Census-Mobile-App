@@ -12,6 +12,7 @@ import AppIcon from '../../components/common/AppIcon';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { CreateHouseholdApi } from '../../store/slices/commonSlice';
 import { useAppDispatch } from '../../store/hooks';
+import { setStorageData, STORAGE_KEYS } from '../../utils/storage';
 
 const MembersScreen = () => {
   const navigation = useNavigation<any>();
@@ -61,7 +62,7 @@ const MembersScreen = () => {
   const [showEducationModal, setShowEducationModal] = useState(false);
   const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
   const [errors, setErrors] = useState<any>({});
-  
+
   const handleSave = async () => {
     const payload = {
       head_name: data.headName,
@@ -91,6 +92,10 @@ const MembersScreen = () => {
 
     const result = await dispatch(CreateHouseholdApi(payload)).unwrap();
     if (result.status === 'success') {
+      const data = {
+        HHID: result.data.hh_id,
+      };
+      await setStorageData(STORAGE_KEYS.HOUSE_HOLD_DATA, data);
       navigation.navigate('Survey');
     }
   };

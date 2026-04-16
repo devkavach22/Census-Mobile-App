@@ -1,4 +1,4 @@
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,11 @@ import {
   TextInput,
 } from 'react-native';
 import AppIcon from '../../components/common/AppIcon';
-import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
+import {
+  getStorageData,
+  removeStorageData,
+  STORAGE_KEYS,
+} from '../../utils/storage';
 import { AuthContext } from '../../../App';
 import { useIsFocused, useNavigation } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -43,6 +47,7 @@ const getNotificationConfig = (type: any) => {
 const EnumeratorDashboard = () => {
   const Navigation = useNavigation();
   const IsFocused = useIsFocused();
+  const [householdData, setHouseholdData] = useState(null);
   const { userDetails, setUserDetails } = useContext(AuthContext);
   const { DashboardStatesData, notifications } = useSelector(
     (state: any) => state.common,
@@ -54,8 +59,19 @@ const EnumeratorDashboard = () => {
     if (IsFocused) {
       dispatch(DashboardStatesApi());
       dispatch(GetNotificationsApi());
+
+      loadHouseholdData();
     }
   }, [IsFocused]);
+
+  const loadHouseholdData = async () => {
+    try {
+      const result = await getStorageData(STORAGE_KEYS.HOUSE_HOLD_DATA);
+      setHouseholdData(result);
+    } catch (error) {
+      console.log('Storage error:', error);
+    }
+  };
 
   const logOut = async () => {
     // 1. Clear storage
@@ -182,6 +198,7 @@ const EnumeratorDashboard = () => {
                 title="Add Household"
                 icon="home"
                 navigateTo="AddHousehold"
+                householdData={householdData}
               />
 
               <QuickAction
@@ -189,6 +206,7 @@ const EnumeratorDashboard = () => {
                 icon="play-circle"
                 type="Feather"
                 navigateTo="Survey"
+                householdData={householdData}
               />
 
               <QuickAction
@@ -196,9 +214,15 @@ const EnumeratorDashboard = () => {
                 icon="map"
                 type="Feather"
                 navigateTo="MapView"
+                householdData={householdData}
               />
 
-              <QuickAction title="My Reports" icon="file-text" type="Feather" />
+              <QuickAction
+                title="My Reports"
+                icon="file-text"
+                type="Feather"
+                householdData={householdData}
+              />
             </View>
           </View>
 
@@ -306,17 +330,32 @@ const StatCard = ({ title, value, subtitle, color }: any) => (
   </View>
 );
 
-const QuickAction = ({ title, icon, type = 'Material', navigateTo }: any) => {
+const QuickAction = ({
+  title,
+  icon,
+  type = 'Material',
+  navigateTo,
+  householdData,
+}: any) => {
   const Navigation = useNavigation();
+
+  const handlePress = () => {
+    if (!navigateTo) {
+      showToast('Reports feature coming soon');
+      return;
+    }
+
+    // Example condition logic
+    if (title === 'Continue Survey' && !householdData) {
+      showToast('No saved household data found');
+      return;
+    }
+
+    Navigation.navigate(navigateTo as never);
+  };
+
   return (
-    <TouchableOpacity
-      style={styles.quickCard}
-      onPress={() =>
-        navigateTo
-          ? Navigation.navigate(navigateTo as never)
-          : showToast('Reports feature coming soon')
-      }
-    >
+    <TouchableOpacity style={styles.quickCard} onPress={handlePress}>
       <View style={styles.quickIcon}>
         <AppIcon type={type} name={icon} size={22} color="#2563EB" />
       </View>
@@ -707,6 +746,3 @@ const styles = StyleSheet.create({
     color: '#374151',
   },
 });
-function getCachedLocation() {
-  throw new Error('Function not implemented.');
-}

@@ -37,4 +37,8 @@ export const ENDPOINTS = {
 
   //filters Apis
   GEO_FILTER_OPTIONS: '/api/census/geo_filter_options',
+
+  //servey Apis
+  GET_SURVEY_QUESTIONS: '/api/survey/questions?survey_id=',
+  SURVEY_SUBMIT: '/api/survey/submit',
 };
