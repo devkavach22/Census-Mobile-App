@@ -260,8 +260,8 @@ const DistrictDashboardScreen = () => {
 
               <BarChart
                 data={barData}
-                barWidth={28}
-                spacing={18}
+                barWidth={44}
+                spacing={20}
                 noOfSections={3}
                 hideRules
                 yAxisThickness={0}
