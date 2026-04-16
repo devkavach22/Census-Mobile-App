@@ -1,9 +1,10 @@
-import React, { useContext, useEffect, useRef } from 'react';
+import React, { useContext, useEffect, useMemo, useRef } from 'react';
 import {
   StyleSheet,
   View,
   Text,
   TouchableOpacity,
+  FlatList,
   ScrollView,
   Animated,
   Easing,
@@ -15,18 +16,32 @@ import { AuthContext } from '../../../App';
 import { removeStorageData, STORAGE_KEYS } from '../../utils/storage';
 import CustomDropdown from '../../components/common/CustomDropdown';
 import { showToast } from '../../components/common/showToast';
-import { useNavigation } from '@react-navigation/native';
-import { updateState } from '../../store/slices/commonSlice';
+import { useIsFocused, useNavigation } from '@react-navigation/native';
+import {
+  GetDistrictDashboardApi,
+  updateState,
+} from '../../store/slices/commonSlice';
 import { useAppDispatch } from '../../store/hooks';
+import { useSelector } from 'react-redux';
 
 const DistrictDashboardScreen = () => {
   const { setUserDetails } = useContext(AuthContext);
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
+  const isFocused = useIsFocused();
 
-  // Animation controller for Heatmap and Custom Elements
   const masterAnim = useRef(new Animated.Value(0)).current;
 
+  const { DistrictDashboardData } = useSelector((state: any) => state.common);
+
+  /* ---------------- API CALL ---------------- */
+  useEffect(() => {
+    if (isFocused) {
+      dispatch(GetDistrictDashboardApi());
+    }
+  }, [isFocused]);
+
+  /* ---------------- ANIMATION ---------------- */
   useEffect(() => {
     Animated.timing(masterAnim, {
       toValue: 1,
@@ -36,11 +51,10 @@ const DistrictDashboardScreen = () => {
     }).start();
   }, []);
 
+  /* ---------------- LOGOUT ---------------- */
   const logOut = async () => {
-    // 1. Clear storage
     await removeStorageData(STORAGE_KEYS.LOGIN_DATA);
 
-    // 2. Reset Redux state
     dispatch(
       updateState({
         isLogin: false,
@@ -49,52 +63,84 @@ const DistrictDashboardScreen = () => {
       }),
     );
 
-    // 3. Reset context
     setUserDetails(null);
   };
 
-  const barData = [
-    { value: 230, label: 'Saket', frontColor: '#3B82F6' },
-    { value: 180, label: 'Vasant', frontColor: '#3B82F6' },
-    { value: 250, label: 'GK-1', frontColor: '#3B82F6' },
-    { value: 150, label: 'GK-2', frontColor: '#BFDBFE' },
-    { value: 190, label: 'Hauz', frontColor: '#3B82F6' },
-    { value: 130, label: 'Lajpat', frontColor: '#BFDBFE' },
-    { value: 210, label: 'Malviya', frontColor: '#3B82F6' },
+  /* ---------------- SAFE DATA ---------------- */
+  const dashboard = DistrictDashboardData || {};
+
+  const stats = dashboard?.stats || {};
+  const charts = dashboard?.charts || {};
+  const heatmap = dashboard?.heatmap || {};
+
+  /* ---------------- HEADER ---------------- */
+  const districtName = dashboard?.district_name || 'District';
+  const adminName = dashboard?.admin_name || 'Admin';
+
+  /* ---------------- BAR CHART ---------------- */
+  const barData = useMemo(() => {
+    const colors = ['#3B82F6', '#60A5FA', '#2563EB', '#93C5FD'];
+
+    return (charts?.population_by_ward || [])
+      .slice(0, 8)
+      .map((item: any, index: number) => ({
+        value: Number(item?.value || 0),
+        label:
+          item?.name?.length > 8
+            ? item?.name?.substring(0, 8)
+            : item?.name || '',
+        frontColor: colors[index % colors.length],
+      }));
+  }, [charts]);
+
+  /* ---------------- PIE CHART ---------------- */
+  const pieData = useMemo(() => {
+    const colors: any = {
+      Male: '#3B82F6',
+      Female: '#C084FC',
+      Other: '#CBD5E1',
+    };
+
+    return (charts?.gender_distribution || []).map((item: any) => ({
+      value: Number(item?.percentage || 0),
+      color: colors[item?.label] || '#94A3B8',
+      text: `${item?.percentage}%`,
+    }));
+  }, [charts]);
+
+  const centerPercent = charts?.gender_distribution?.[0]?.percentage || 0;
+
+  /* ---------------- EMPLOYMENT ---------------- */
+  const employmentColors = [
+    '#1D4ED8',
+    '#2563EB',
+    '#D97706',
+    '#DC2626',
+    '#059669',
   ];
 
-  const pieData = [
-    { value: 52, color: '#3B82F6', text: '52%' },
-    { value: 44, color: '#C084FC' },
-    { value: 4, color: '#CBD5E1' },
-  ];
+  /* ---------------- HEATMAP ---------------- */
+  const heatmapRows = useMemo(() => {
+    const list = heatmap?.ward_completion_stats || [];
 
-  const heatmapData = [
-    [
-      '#3B82F6',
-      '#60A5FA',
-      '#ED8936',
-      '#1E40AF',
-      '#10B981',
-      '#93C5FD',
-      '#F87171',
-      '#3B82F6',
-      '#059669',
-      '#93C5FD',
-    ],
-    [
-      '#10B981',
-      '#FBD38D',
-      '#3B82F6',
-      '#3B82F6',
-      '#10B981',
-      '#FCA5A5',
-      '#60A5FA',
-      '#60A5FA',
-      '#1E40AF',
-      '#F6AD55',
-    ],
-  ];
+    const getColor = (percent: number) => {
+      if (percent >= 90) return '#1E3A8A';
+      if (percent >= 70) return '#3B82F6';
+      if (percent >= 50) return '#10B981';
+      if (percent >= 30) return '#F59E0B';
+      if (percent > 0) return '#EF4444';
+      return '#E2E8F0';
+    };
+
+    const colors = list.map((item: any) =>
+      getColor(Number(item?.completion_percent || 0)),
+    );
+
+    return [
+      colors.filter((_: any, i: number) => i % 2 === 0),
+      colors.filter((_: any, i: number) => i % 2 !== 0),
+    ];
+  }, [heatmap]);
 
   const renderEmploymentRow = (
     label: string,
@@ -103,176 +149,220 @@ const DistrictDashboardScreen = () => {
   ) => (
     <View style={styles.employmentRow}>
       <Text style={styles.rowLabel}>{label}</Text>
+
       <View style={styles.progressTrack}>
         <View
           style={[
             styles.progressBar,
-            { width: `${percentage}%`, backgroundColor: color },
+            {
+              width: `${percentage}%`,
+              backgroundColor: color,
+            },
           ]}
         />
       </View>
+
       <Text style={styles.rowPercent}>{percentage}%</Text>
+    </View>
+  );
+
+  const renderGenderLegend = (label: string, value: number, color: string) => (
+    <View style={styles.genderRow} key={label}>
+      <View style={[styles.dot, { backgroundColor: color }]} />
+      <Text style={styles.genderLabel}>{label}</Text>
+
+      <View style={styles.miniProgressTrack}>
+        <View
+          style={[
+            styles.miniProgressBar,
+            {
+              width: `${value}%`,
+              backgroundColor: color,
+            },
+          ]}
+        />
+      </View>
+
+      <Text style={styles.genderVal}>{value}%</Text>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* HEADER */}
+      {/* ---------------- HEADER ---------------- */}
       <View style={styles.header}>
-        <View style={styles.headerLeft}>
+        <View>
           <Text style={styles.headerTitle}>
-            🏢 District Admin — South Delhi
+            🏢 District Admin — {districtName}
           </Text>
-          <Text style={styles.headerSubtitle}>
-            Priya Singh, DM Office • Live data
-          </Text>
+
+          <Text style={styles.headerSubtitle}>{adminName} • Live data</Text>
         </View>
-        <View style={styles.headerRightContainer}>
+
+        <View style={styles.headerRight}>
           <CustomDropdown />
+
           <TouchableOpacity
             style={styles.exportButton}
-            onPress={() => showToast('Exporting district report as PDF...')}
+            onPress={() => showToast('Exporting district report...')}
           >
-            <Text style={styles.exportButtonText}>📥 Export</Text>
+            <Text style={styles.exportText}>📥 Export</Text>
           </TouchableOpacity>
+
           <TouchableOpacity style={styles.lockIcon} onPress={logOut}>
-            <AppIcon type="Feather" name="lock" size={18} color="#CBD5F5" />
+            <AppIcon type="Feather" name="lock" size={18} color="#fff" />
           </TouchableOpacity>
         </View>
       </View>
 
+      {/* ---------------- BODY ---------------- */}
       <ScrollView
-        contentContainerStyle={styles.main}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.main}
       >
-        {/* TOP STAT CARDS */}
+        {/* ---------------- STATS ---------------- */}
         <View style={styles.statsBar}>
           <StatCard
             label="POPULATION"
-            value="4,82,136"
-            sub="↑ 2.1% vs last"
+            value={stats?.total_population || 0}
+            sub={stats?.population_trend || ''}
             color="#0F172A"
           />
+
           <StatCard
             label="LITERACY"
-            value="91.2%"
+            value={stats?.literacy_rate || '0%'}
             sub="Above state avg"
             color="#10B981"
           />
+
           <StatCard
             label="VERIFIED %"
-            value="78.4%"
-            sub="12,340 verified"
+            value={stats?.verified_percent || '0%'}
+            sub={stats?.verified_count_label || ''}
             color="#1E3A8A"
           />
+
           <StatCard
             label="FRAUD FLAGGED"
-            value="1.8%"
-            sub="224 cases"
+            value={stats?.flagged_rate || '0'}
+            sub={`${stats?.flagged_count || 0} cases`}
             color="#EF4444"
           />
         </View>
 
-        <View style={styles.mainContent}>
-          {/* LEFT COLUMN */}
-          <View style={styles.leftColumn}>
-            <View style={styles.chartCard}>
-              <Text style={styles.chartTitle}>POPULATION BY WARD</Text>
+        {/* ---------------- CONTENT ---------------- */}
+        <View style={styles.content}>
+          {/* LEFT */}
+          <View style={styles.left}>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>POPULATION BY WARD</Text>
+
               <BarChart
                 data={barData}
-                barWidth={32}
+                barWidth={28}
+                spacing={18}
                 noOfSections={3}
-                barBorderRadius={6}
-                frontColor="#3B82F6"
-                isAnimated // Bar Chart Animation
-                animationDuration={1500}
-                initialSpacing={10}
+                hideRules
                 yAxisThickness={0}
                 xAxisThickness={0}
-                hideRules
-                yAxisLabelContainerStyle={{ width: 0 }}
-                labelWidth={40}
+                barBorderRadius={6}
+                isAnimated
+                animationDuration={1500}
                 xAxisLabelTextStyle={styles.xAxisText}
               />
             </View>
 
-            <View style={styles.chartCard}>
-              <Text style={styles.chartTitle}>EMPLOYMENT SPLIT</Text>
-              {renderEmploymentRow('Salaried', 38, '#1D4ED8')}
-              {renderEmploymentRow('Self-employed', 26, '#2563EB')}
-              {renderEmploymentRow('Daily wage', 18, '#D97706')}
-              {renderEmploymentRow('Unemployed', 12, '#DC2626')}
-              {renderEmploymentRow('Student', 6, '#059669')}
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>EMPLOYMENT SPLIT</Text>
+
+              {(charts?.employment_split || []).map(
+                (item: any, index: number) =>
+                  renderEmploymentRow(
+                    item?.label,
+                    Number(item?.value || 0),
+                    employmentColors[index % employmentColors.length],
+                  ),
+              )}
             </View>
           </View>
 
-          {/* RIGHT COLUMN */}
-          <View style={styles.rightColumn}>
-            <View style={styles.chartCard}>
-              <Text style={styles.chartTitle}>GENDER DISTRIBUTION</Text>
-              <View style={styles.rowAlignCenter}>
-                <View style={styles.donutWrapper}>
-                  <PieChart
-                    data={pieData}
-                    donut
-                    isAnimated // Donut Animation
-                    animationDuration={1200}
-                    radius={45}
-                    innerRadius={30}
-                    centerLabelComponent={() => (
-                      <Text style={{ fontWeight: 'bold', fontSize: 12 }}>
-                        52%
-                      </Text>
-                    )}
-                  />
-                </View>
-                <View style={styles.genderStats}>
-                  {renderGenderLegend('Male', '52%', '#3B82F6')}
-                  {renderGenderLegend('Female', '44%', '#C084FC')}
-                  {renderGenderLegend('Other', '4%', '#CBD5E1')}
+          {/* RIGHT */}
+          <View style={styles.right}>
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>GENDER DISTRIBUTION</Text>
+
+              <View style={styles.genderWrap}>
+                <PieChart
+                  data={pieData}
+                  donut
+                  radius={45}
+                  innerRadius={28}
+                  isAnimated
+                  animationDuration={1200}
+                  centerLabelComponent={() => (
+                    <Text
+                      style={{
+                        fontWeight: 'bold',
+                        fontSize: 14,
+                      }}
+                    >
+                      {centerPercent}%
+                    </Text>
+                  )}
+                />
+
+                <View style={{ flex: 1 }}>
+                  {(charts?.gender_distribution || []).map((item: any) =>
+                    renderGenderLegend(
+                      item?.label,
+                      item?.percentage,
+                      item?.label === 'Male'
+                        ? '#3B82F6'
+                        : item?.label === 'Female'
+                        ? '#C084FC'
+                        : '#CBD5E1',
+                    ),
+                  )}
                 </View>
               </View>
             </View>
 
-            <View style={styles.chartCard}>
-              <Text style={styles.chartTitle}>SURVEY COMPLETION HEATMAP</Text>
-              <View style={styles.heatmapGrid}>
-                {heatmapData.map((row, rIdx) => (
-                  <View key={rIdx} style={styles.heatmapRow}>
-                    {row.map((color, cIdx) => {
-                      // Custom Staggered Animation for Heatmap
-                      const scale = masterAnim.interpolate({
-                        inputRange: [0, 0.4, 1],
-                        outputRange: [0, 0, 1],
-                      });
+            <View style={styles.card}>
+              <Text style={styles.cardTitle}>SURVEY COMPLETION HEATMAP</Text>
 
-                      return (
-                        <Animated.View
-                          key={cIdx}
-                          style={[
-                            styles.heatmapBox,
-                            {
-                              backgroundColor: color,
-                              opacity: masterAnim,
-                              transform: [{ scale: scale }],
-                            },
-                          ]}
-                        />
-                      );
-                    })}
-                  </View>
-                ))}
-              </View>
-              <View style={styles.heatmapLegend}>
+              <FlatList
+                data={heatmapRows}
+                keyExtractor={(_, index) => index.toString()}
+                scrollEnabled={false}
+                renderItem={({ item }) => (
+                  <FlatList
+                    data={item}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    keyExtractor={(_, index) => index.toString()}
+                    contentContainerStyle={{ marginBottom: 8 }}
+                    renderItem={({ item: color, index }) => (
+                      <Animated.View
+                        key={index}
+                        style={[
+                          styles.heatBox,
+                          {
+                            backgroundColor: color,
+                            opacity: masterAnim,
+                            transform: [{ scale: masterAnim }],
+                          },
+                        ]}
+                      />
+                    )}
+                  />
+                )}
+              />
+
+              <View style={styles.legend}>
                 <Text style={styles.legendText}>Low coverage</Text>
                 <Text style={styles.legendText}>High coverage</Text>
               </View>
-              <TouchableOpacity
-                style={styles.stateViewBtn}
-                onPress={() => navigation.navigate('StatePerformance')}
-              >
-                <Text style={styles.stateViewBtnText}>↑ State View</Text>
-              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -281,6 +371,7 @@ const DistrictDashboardScreen = () => {
   );
 };
 
+/* ---------------- CARD ---------------- */
 const StatCard = ({ label, value, sub, color }: any) => (
   <View style={styles.statCard}>
     <Text style={styles.statLabel}>{label}</Text>
@@ -289,138 +380,238 @@ const StatCard = ({ label, value, sub, color }: any) => (
   </View>
 );
 
-const renderGenderLegend = (label: string, val: string, color: string) => (
-  <View style={styles.genderRow}>
-    <View style={[styles.dot, { backgroundColor: color }]} />
-    <Text style={styles.genderLabel}>{label}</Text>
-    <View style={styles.miniProgressTrack}>
-      <View
-        style={[
-          styles.miniProgressBar,
-          { width: val, backgroundColor: color } as any,
-        ]}
-      />
-    </View>
-    <Text style={styles.genderVal}>{val}</Text>
-  </View>
-);
-
+/* ---------------- STYLE ---------------- */
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0F172A' },
-  main: { backgroundColor: '#F1F5F9', paddingBottom: 40 },
-  // #F1F5F9
+  container: { flex: 1 },
+
+  main: {
+    backgroundColor: '#F1F5F9',
+    paddingBottom: 40,
+  },
+
   header: {
     height: 70,
+    paddingHorizontal: 20,
     backgroundColor: '#0F172A',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    paddingHorizontal: 20,
   },
-  headerLeft: { flexDirection: 'column' },
-  headerTitle: { color: 'white', fontSize: 18, fontWeight: 'bold' },
-  headerSubtitle: { color: '#94A3B8', fontSize: 12 },
-  headerRightContainer: { flexDirection: 'row', alignItems: 'center' },
+
+  headerTitle: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: '700',
+  },
+
+  headerSubtitle: {
+    color: '#94A3B8',
+    fontSize: 12,
+    marginTop: 3,
+  },
+
+  headerRight: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+
   exportButton: {
-    backgroundColor: 'white',
-    paddingHorizontal: 16,
+    backgroundColor: '#fff',
+    paddingHorizontal: 14,
     paddingVertical: 8,
     borderRadius: 8,
     marginLeft: 10,
   },
-  exportButtonText: { color: '#0F172A', fontWeight: 'bold' },
-  statsBar: { flexDirection: 'row', padding: 20 },
+
+  exportText: {
+    color: '#0F172A',
+    fontWeight: '700',
+  },
+
+  lockIcon: {
+    width: 34,
+    height: 34,
+    borderRadius: 20,
+    backgroundColor: '#334155',
+    marginLeft: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+
+  statsBar: {
+    flexDirection: 'row',
+    padding: 18,
+  },
+
   statCard: {
     flex: 1,
-    backgroundColor: 'white',
+    backgroundColor: '#fff',
+    borderRadius: 14,
     padding: 15,
-    borderRadius: 12,
     marginHorizontal: 5,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  statLabel: { color: '#64748B', fontSize: 10, fontWeight: 'bold' },
-  statValue: { fontSize: 22, fontWeight: 'bold', marginVertical: 4 },
-  statSub: { color: '#94A3B8', fontSize: 10 },
-  mainContent: { flex: 1, flexDirection: 'row', paddingHorizontal: 15 },
-  leftColumn: { flex: 0.55, paddingRight: 10 },
-  rightColumn: { flex: 0.45 },
-  chartCard: {
-    backgroundColor: 'white',
+
+  statLabel: {
+    fontSize: 12,
+    color: '#64748B',
+    fontWeight: '700',
+  },
+
+  statValue: {
+    fontSize: 24,
+    fontWeight: '700',
+    marginVertical: 4,
+  },
+
+  statSub: {
+    fontSize: 12,
+    color: '#94A3B8',
+  },
+
+  content: {
+    flexDirection: 'row',
+    paddingHorizontal: 15,
+  },
+
+  left: {
+    flex: 0.55,
+    paddingRight: 10,
+  },
+
+  right: {
+    flex: 0.45,
+  },
+
+  card: {
+    backgroundColor: '#fff',
     borderRadius: 16,
-    padding: 20,
+    padding: 25,
     marginBottom: 15,
     borderWidth: 1,
     borderColor: '#E2E8F0',
   },
-  chartTitle: {
+
+  cardTitle: {
     color: '#64748B',
-    fontSize: 11,
-    fontWeight: 'bold',
+    fontSize: 14,
+    fontWeight: '700',
     marginBottom: 20,
   },
-  xAxisText: { color: '#64748B', fontSize: 10 },
+
+  xAxisText: {
+    fontSize: 10,
+    color: '#64748B',
+  },
+
   employmentRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
   },
-  rowLabel: { flex: 0.3, fontSize: 12, color: '#475569', fontWeight: '500' },
-  progressTrack: {
-    flex: 0.6,
-    height: 8,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  progressBar: { height: '100%' },
-  rowPercent: {
-    flex: 0.15,
+
+  rowLabel: {
+    width: 100,
     fontSize: 12,
-    textAlign: 'right',
-    fontWeight: 'bold',
-    color: '#1E293B',
+    color: '#334155',
   },
-  rowAlignCenter: { flexDirection: 'row', alignItems: 'center' },
-  donutWrapper: { flex: 0.4 },
-  genderStats: { flex: 0.6 },
-  genderRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
-  dot: { width: 8, height: 8, borderRadius: 4, marginRight: 8 },
-  genderLabel: { fontSize: 11, color: '#64748B', width: 45 },
+
+  progressTrack: {
+    flex: 1,
+    height: 8,
+    backgroundColor: '#EEF2F7',
+    borderRadius: 8,
+    overflow: 'hidden',
+    marginHorizontal: 10,
+  },
+
+  progressBar: {
+    height: '100%',
+  },
+
+  rowPercent: {
+    width: 40,
+    fontWeight: '700',
+    textAlign: 'right',
+  },
+
+  genderWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  heatBox: {
+    width: 60,
+    height: 48,
+    borderRadius: 6,
+    marginRight: 10,
+  },
+
+  genderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+
+  dot: {
+    width: 8,
+    height: 8,
+    borderRadius: 10,
+    marginRight: 8,
+  },
+
+  genderLabel: {
+    width: 55,
+    fontSize: 11,
+    color: '#64748B',
+  },
+
   miniProgressTrack: {
     flex: 1,
     height: 6,
-    backgroundColor: '#F1F5F9',
-    borderRadius: 3,
-    marginHorizontal: 10,
+    backgroundColor: '#EEF2F7',
+    borderRadius: 6,
+    overflow: 'hidden',
+    marginHorizontal: 8,
   },
-  miniProgressBar: { height: '100%', borderRadius: 3 },
-  genderVal: { fontSize: 11, fontWeight: 'bold', width: 30 },
-  heatmapGrid: { gap: 8 },
-  heatmapRow: { flexDirection: 'row', gap: 8 },
-  heatmapBox: { flex: 1, height: 35, borderRadius: 6 },
-  heatmapLegend: {
+
+  miniProgressBar: {
+    height: '100%',
+  },
+
+  genderVal: {
+    width: 30,
+    fontSize: 11,
+    fontWeight: '700',
+  },
+
+  heatRow: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+
+  legend: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginTop: 10,
+    marginTop: 12,
   },
-  legendText: { fontSize: 10, color: '#94A3B8' },
-  stateViewBtn: {
+
+  legendText: {
+    color: '#94A3B8',
+    fontSize: 12,
+  },
+
+  stateBtn: {
     backgroundColor: '#1E3A8A',
-    padding: 12,
+    padding: 13,
     borderRadius: 8,
-    marginTop: 20,
+    marginTop: 18,
     alignItems: 'center',
   },
-  stateViewBtnText: { color: 'white', fontWeight: 'bold' },
-  lockIcon: {
-    width: 34,
-    height: 34,
-    borderRadius: 17,
-    marginLeft: 20,
-    backgroundColor: '#334155',
-    justifyContent: 'center',
-    alignItems: 'center',
+
+  stateBtnText: {
+    color: '#fff',
+    fontWeight: '700',
   },
 });
 

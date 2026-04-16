@@ -14,6 +14,7 @@ interface ReportState {
   questions: any;
   profile: any;
   DashboardStatesData: any;
+  DistrictDashboardData: any;
   isLogin: boolean;
   loading: boolean;
   error: string | null;
@@ -24,6 +25,7 @@ const initialState: ReportState = {
   token: null,
   userData: null,
   DashboardStatesData: [],
+  DistrictDashboardData: {},
   notifications: [],
   SurveryQuestionData: [],
   geoData: [],
@@ -298,6 +300,18 @@ export const GetSurveyQuestionsApi = createAsyncThunk(
   },
 );
 
+export const GetDistrictDashboardApi = createAsyncThunk(
+  'GetDistrictDashboardApi',
+  async (_, { rejectWithValue }) => {
+    try {
+      const response = await api.get(ENDPOINTS.DISTRICT_DASHBOARD);
+      return response.data.data;
+    } catch (error: any) {
+      return handleThunkError(error, rejectWithValue);
+    }
+  },
+);
+
 // ============================
 // Slice
 // ============================
@@ -383,6 +397,13 @@ const commonSlice = createSlice({
         DashboardStatesApi.fulfilled,
         (state, action: PayloadAction<any>) => {
           state.DashboardStatesData = action.payload;
+        },
+      )
+
+      .addCase(
+        GetDistrictDashboardApi.fulfilled,
+        (state, action: PayloadAction<any>) => {
+          state.DistrictDashboardData = action.payload;
         },
       )
 

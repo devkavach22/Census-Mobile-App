@@ -41,4 +41,7 @@ export const ENDPOINTS = {
   //servey Apis
   GET_SURVEY_QUESTIONS: '/api/survey/questions?survey_id=',
   SURVEY_SUBMIT: '/api/survey/submit',
+
+  //district Apis
+  DISTRICT_DASHBOARD: '/api/census/admin/district_dashboard',
 };
