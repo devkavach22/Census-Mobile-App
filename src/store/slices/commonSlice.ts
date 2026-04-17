@@ -179,10 +179,6 @@ export const CreateHouseholdApi = createAsyncThunk(
   'CreateHouseholdApi',
   async (payload: any, { rejectWithValue }) => {
     try {
-      console.log(
-        'PAYLAOD CreateHouseholdApi ===>',
-        JSON.stringify(payload, null, 2),
-      );
       const response = await api.post(ENDPOINTS.CREATE_HOUSEHOLD, payload);
       return response.data;
     } catch (error: any) {
