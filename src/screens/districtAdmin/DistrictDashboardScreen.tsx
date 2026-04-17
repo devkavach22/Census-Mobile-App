@@ -8,6 +8,7 @@ import {
   ScrollView,
   Animated,
   Easing,
+  StatusBar,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BarChart, PieChart } from 'react-native-gifted-charts';
@@ -29,9 +30,7 @@ const DistrictDashboardScreen = () => {
   const dispatch = useAppDispatch();
   const navigation = useNavigation<any>();
   const isFocused = useIsFocused();
-
   const masterAnim = useRef(new Animated.Value(0)).current;
-
   const { DistrictDashboardData } = useSelector((state: any) => state.common);
 
   /* ---------------- API CALL ---------------- */
@@ -68,7 +67,6 @@ const DistrictDashboardScreen = () => {
 
   /* ---------------- SAFE DATA ---------------- */
   const dashboard = DistrictDashboardData || {};
-
   const stats = dashboard?.stats || {};
   const charts = dashboard?.charts || {};
   const heatmap = dashboard?.heatmap || {};
@@ -149,7 +147,6 @@ const DistrictDashboardScreen = () => {
   ) => (
     <View style={styles.employmentRow}>
       <Text style={styles.rowLabel}>{label}</Text>
-
       <View style={styles.progressTrack}>
         <View
           style={[
@@ -170,7 +167,6 @@ const DistrictDashboardScreen = () => {
     <View style={styles.genderRow} key={label}>
       <View style={[styles.dot, { backgroundColor: color }]} />
       <Text style={styles.genderLabel}>{label}</Text>
-
       <View style={styles.miniProgressTrack}>
         <View
           style={[
@@ -189,6 +185,7 @@ const DistrictDashboardScreen = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar translucent barStyle="default" />
       {/* ---------------- HEADER ---------------- */}
       <View style={styles.header}>
         <View>
@@ -291,7 +288,6 @@ const DistrictDashboardScreen = () => {
           <View style={styles.right}>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>GENDER DISTRIBUTION</Text>
-
               <View style={styles.genderWrap}>
                 <PieChart
                   data={pieData}

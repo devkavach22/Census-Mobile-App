@@ -19,174 +19,23 @@ import {
 import { useAppDispatch } from '../../store/hooks';
 import { useSelector } from 'react-redux';
 
-// --- DATA CONSTANTS ---
 const COLORS = {
-  high: '#10B981', // Green
-  medium: '#3B82F6', // Blue
-  low: '#EF4444', // Red
-  warning: '#F59E0B', // Amber/Orange
+  high: '#10B981',
+  medium: '#3B82F6',
+  low: '#EF4444',
+  warning: '#F59E0B',
 };
 
-const top5States = [
-  {
-    rank: '1.',
-    name: 'Kerala',
-    score: '98.2%',
-    color: '#D1FAE5',
-    textColor: '#065F46',
-  },
-  {
-    rank: '2.',
-    name: 'Tamil Nadu',
-    score: '96.7%',
-    color: '#D1FAE5',
-    textColor: '#065F46',
-  },
-  {
-    rank: '3.',
-    name: 'Himachal',
-    score: '94.1%',
-    color: '#D1FAE5',
-    textColor: '#065F46',
-  },
-  {
-    rank: '4.',
-    name: 'Karnataka',
-    score: '89.4%',
-    color: '#DBEAFE',
-    textColor: '#1E40AF',
-  },
-  {
-    rank: '5.',
-    name: 'Maharashtra',
-    score: '87.9%',
-    color: '#DBEAFE',
-    textColor: '#1E40AF',
-  },
-];
-
-const bottom5States = [
-  {
-    icon: '⚠',
-    name: 'Uttar Pradesh',
-    score: '41%',
-    color: '#FEE2E2',
-    textColor: '#991B1B',
-  },
-  {
-    icon: '⚠',
-    name: 'Bihar',
-    score: '48.7%',
-    color: '#FEF3C7',
-    textColor: '#92400E',
-  },
-  {
-    icon: '↓',
-    name: 'Jharkhand',
-    score: '51.3%',
-    color: '#FEF3C7',
-    textColor: '#92400E',
-  },
-  {
-    icon: '↓',
-    name: 'Assam',
-    score: '54.8%',
-    color: '#FEF3C7',
-    textColor: '#92400E',
-  },
-  {
-    icon: '↓',
-    name: 'Rajasthan',
-    score: '58.2%',
-    color: '#FEF3C7',
-    textColor: '#92400E',
-  },
-];
-
-// --- MAP COMPONENT ---
-const IndiaGridMap = () => {
-  const Block = ({ name, color, flex = 1, marginRight = 8 }: any) => (
-    <View
-      style={[styles.mapBlock, { backgroundColor: color, flex, marginRight }]}
-    >
-      <Text style={styles.mapBlockText} numberOfLines={2}>
-        {name}
-      </Text>
-    </View>
-  );
-
-  return (
-    <View style={styles.mapContainerInner}>
-      {/* Row 1: Punjab, Rajasthan, Bihar */}
-      <View style={styles.mapRow}>
-        <View style={{ flex: 0.2 }} />
-        <Block name="Punjab" color={COLORS.high} flex={0.6} />
-        <Block name="Rajasthan 82%" color={COLORS.medium} flex={1.2} />
-        <Block name="Bihar" color={COLORS.warning} flex={0.6} marginRight={0} />
-      </View>
-
-      {/* Row 2: MP, UP, WB */}
-      <View style={styles.mapRow}>
-        <View style={{ flex: 0.6 }} />
-        <Block name="MP 48%" color={COLORS.low} flex={0.8} />
-        <Block name="UP 41%" color={COLORS.warning} flex={0.8} />
-        <Block name="WB 91%" color={COLORS.high} flex={0.6} marginRight={0} />
-      </View>
-
-      {/* Row 3: Maharashtra, Odisha */}
-      <View style={styles.mapRow}>
-        <View style={{ flex: 0.5 }} />
-        <Block name="Maharashtra" color={COLORS.medium} flex={1} />
-        <Block name="Odisha" color={COLORS.high} flex={0.8} marginRight={0} />
-        <View style={{ flex: 0.4 }} />
-      </View>
-
-      {/* Row 4: Karnataka, AP/TS */}
-      <View style={styles.mapRow}>
-        <View style={{ flex: 0.4 }} />
-        <Block name="Karnataka" color={COLORS.warning} flex={0.8} />
-        <Block name="AP / TS" color={COLORS.low} flex={0.8} marginRight={0} />
-        <View style={{ flex: 0.6 }} />
-      </View>
-
-      {/* Row 5: Tamil Nadu, Kerala */}
-      <View style={styles.mapRow}>
-        <View style={{ flex: 0.7 }} />
-        <Block name="Tamil Nadu" color={COLORS.high} flex={0.7} />
-        <Block name="Kerala" color={COLORS.medium} flex={0.6} marginRight={0} />
-        <View style={{ flex: 0.6 }} />
-      </View>
-
-      {/* Map Legend */}
-      <View style={styles.legendWrapper}>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.high }]} />
-          <Text style={styles.legendText}>High 80%+</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View
-            style={[styles.legendDot, { backgroundColor: COLORS.medium }]}
-          />
-          <Text style={styles.legendText}>Med 60-80%</Text>
-        </View>
-        <View style={styles.legendItem}>
-          <View style={[styles.legendDot, { backgroundColor: COLORS.low }]} />
-          <Text style={styles.legendText}>Low/Risk</Text>
-        </View>
-      </View>
-    </View>
-  );
-};
-
-// --- MAIN SCREEN ---
 const NationalDashboardScreen = () => {
   const navigation = useNavigation<any>();
   const { setUserDetails } = useContext(AuthContext);
   const dispatch = useAppDispatch();
   const { NationalDashboardData } = useSelector((state: any) => state.common);
   const isFocused = useIsFocused();
+  const header = NationalDashboardData?.header;
+  const rankings = NationalDashboardData?.rankings;
+  const fraud = NationalDashboardData?.fraud_and_quality;
 
-  /* ---------------- API CALL ---------------- */
   useEffect(() => {
     if (isFocused) {
       dispatch(GetNationalDashboardApi());
@@ -194,17 +43,8 @@ const NationalDashboardScreen = () => {
   }, [isFocused]);
 
   const logOut = async () => {
-    // 1. Clear storage
     await removeStorageData(STORAGE_KEYS.LOGIN_DATA);
-
-    // 2. Reset Redux state
-    dispatch(
-      updateState({
-        isLogin: false,
-        token: null,
-        userData: null,
-      }),
-    );
+    dispatch(updateState({ isLogin: false, token: null, userData: null }));
     setUserDetails(null);
   };
 
@@ -235,11 +75,10 @@ const NationalDashboardScreen = () => {
           </TouchableOpacity>
         </View>
       </View>
-      <ScrollView style={styles.container}>
-        {/* HEADER */}
 
+      <ScrollView style={styles.container}>
         <View style={styles.contentPadding}>
-          {/* TOP KPI CARDS */}
+          {/* KPI CARDS */}
           <View style={styles.row}>
             <View
               style={[
@@ -249,9 +88,12 @@ const NationalDashboardScreen = () => {
               ]}
             >
               <Text style={styles.kpiLabel}>STATES</Text>
-              <Text style={styles.kpiValue}>28/28</Text>
-              <Text style={styles.kpiSub}>+ 8 UTs</Text>
+              <Text style={styles.kpiValue}>
+                {header?.states?.count || '-'}
+              </Text>
+              <Text style={styles.kpiSub}>+ {header?.states?.uts}</Text>
             </View>
+
             <View
               style={[
                 styles.card,
@@ -261,10 +103,13 @@ const NationalDashboardScreen = () => {
             >
               <Text style={styles.kpiLabel}>HOUSEHOLDS</Text>
               <Text style={[styles.kpiValue, { color: '#10B981' }]}>
-                31.2 Cr
+                {header?.households?.actual}
               </Text>
-              <Text style={styles.kpiSub}>of 35 Cr target</Text>
+              <Text style={styles.kpiSub}>
+                of {header?.households?.target} target
+              </Text>
             </View>
+
             <View
               style={[
                 styles.card,
@@ -274,10 +119,13 @@ const NationalDashboardScreen = () => {
             >
               <Text style={styles.kpiLabel}>POPULATION</Text>
               <Text style={[styles.kpiValue, { color: '#1E3A8A' }]}>
-                96.4 Cr
+                {header?.population?.actual}
               </Text>
-              <Text style={styles.kpiSub}>71.2% complete</Text>
+              <Text style={styles.kpiSub}>
+                {header?.population?.percentage}% complete
+              </Text>
             </View>
+
             <View
               style={[
                 styles.card,
@@ -286,107 +134,119 @@ const NationalDashboardScreen = () => {
               ]}
             >
               <Text style={styles.kpiLabel}>FRAUD</Text>
-              <Text style={[styles.kpiValue, { color: '#EF4444' }]}>2.4L</Text>
-              <Text style={styles.kpiSub}>Detected cases</Text>
+              <Text style={[styles.kpiValue, { color: '#EF4444' }]}>
+                {header?.fraud?.detected_cases}
+              </Text>
+              <Text style={styles.kpiSub}>{header?.fraud?.label}</Text>
             </View>
           </View>
 
-          {/* MIDDLE SECTION: Grid Map + Lists */}
+          {/* TOP + BOTTOM */}
           <View style={[styles.row, { marginTop: 16 }]}>
-            <View style={[styles.card, styles.mapOuterContainer]}>
-              <Text style={styles.sectionTitle}>GEOGRAPHICAL PROGRESS</Text>
-              <IndiaGridMap />
+            {/* TOP 5 */}
+            <View style={[styles.card, { flex: 1, marginRight: 8 }]}>
+              <Text style={styles.sectionTitle}>TOP 5 STATES</Text>
+              {rankings?.top_5?.map((item: any, index: number) => {
+                const isHigh = item.percentage >= 80;
+
+                return (
+                  <View key={index} style={styles.listItem}>
+                    <View style={{ flexDirection: 'row' }}>
+                      <Text style={styles.listRank}>{index + 1}.</Text>
+                      <Text style={styles.listName}>{item.name}</Text>
+                    </View>
+
+                    <View
+                      style={[
+                        styles.badge,
+                        { backgroundColor: isHigh ? '#D1FAE5' : '#DBEAFE' },
+                      ]}
+                    >
+                      <Text
+                        style={[
+                          styles.badgeText,
+                          { color: isHigh ? '#065F46' : '#1E40AF' },
+                        ]}
+                      >
+                        {item.percentage}%
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })}
             </View>
 
-            <View style={styles.rightColumn}>
-              {/* Top 5 */}
-              <View style={[styles.card, { flex: 1, marginBottom: 16 }]}>
-                <Text style={styles.sectionTitle}>TOP 5 STATES</Text>
-                {top5States.map((item, index) => (
-                  <View key={index} style={styles.listItem}>
-                    <View
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
-                    >
-                      <Text style={styles.listRank}>{item.rank}</Text>
-                      <Text style={styles.listName}>{item.name}</Text>
-                    </View>
-                    <View
-                      style={[styles.badge, { backgroundColor: item.color }]}
-                    >
-                      <Text
-                        style={[styles.badgeText, { color: item.textColor }]}
-                      >
-                        {item.score}
-                      </Text>
-                    </View>
-                  </View>
-                ))}
-              </View>
+            {/* BOTTOM 5 */}
+            <View style={[styles.card, { flex: 1 }]}>
+              <Text style={styles.sectionTitle}>BOTTOM 5 / HIGH-RISK</Text>
+              {rankings?.bottom_5?.map((item: any, index: number) => {
+                const isLow = item.percentage < 50;
 
-              {/* Bottom 5 */}
-              <View style={[styles.card, { flex: 1 }]}>
-                <Text style={styles.sectionTitle}>BOTTOM 5 / HIGH-RISK</Text>
-                {bottom5States.map((item, index) => (
+                return (
                   <View key={index} style={styles.listItem}>
-                    <View
-                      style={{ flexDirection: 'row', alignItems: 'center' }}
-                    >
+                    <View style={{ flexDirection: 'row' }}>
                       <Text style={[styles.listRank, { color: '#EF4444' }]}>
-                        {item.icon}
+                        {isLow ? '⚠' : '↓'}
                       </Text>
                       <Text style={styles.listName}>{item.name}</Text>
                     </View>
+
                     <View
-                      style={[styles.badge, { backgroundColor: item.color }]}
+                      style={[
+                        styles.badge,
+                        { backgroundColor: isLow ? '#FEE2E2' : '#FEF3C7' },
+                      ]}
                     >
                       <Text
-                        style={[styles.badgeText, { color: item.textColor }]}
+                        style={[
+                          styles.badgeText,
+                          { color: isLow ? '#991B1B' : '#92400E' },
+                        ]}
                       >
-                        {item.score}
+                        {item.percentage}%
                       </Text>
                     </View>
                   </View>
-                ))}
-              </View>
+                );
+              })}
             </View>
           </View>
 
-          {/* BOTTOM SECTION: Fraud & Data Quality */}
+          {/* FRAUD SECTION */}
           <View style={[styles.card, { marginTop: 16 }]}>
             <Text style={styles.sectionTitle}>FRAUD & DATA QUALITY</Text>
+
             <View style={styles.row}>
               <View style={[styles.fraudCard, { backgroundColor: '#FEE2E2' }]}>
                 <Text style={[styles.fraudValue, { color: '#DC2626' }]}>
-                  1.84L
+                  {fraud?.duplicate_hhs}
                 </Text>
-                <Text style={[styles.fraudLabel, { color: '#DC2626' }]}>
-                  Duplicate HHs
-                </Text>
+                <Text style={styles.fraudLabel}>Duplicate HHs</Text>
               </View>
+
               <View style={[styles.fraudCard, { backgroundColor: '#FEF3C7' }]}>
                 <Text style={[styles.fraudValue, { color: '#D97706' }]}>
-                  62,410
+                  {fraud?.fake_invalid_ids}
                 </Text>
-                <Text style={[styles.fraudLabel, { color: '#D97706' }]}>
-                  Fake / Invalid IDs
-                </Text>
+                <Text style={styles.fraudLabel}>Fake / Invalid IDs</Text>
               </View>
+
               <View style={[styles.fraudCard, { backgroundColor: '#F3E8FF' }]}>
-                <Text style={[styles.fraudValue, { color: '#7E22CE' }]}>7</Text>
-                <Text style={[styles.fraudLabel, { color: '#7E22CE' }]}>
-                  High-Risk States
+                <Text style={[styles.fraudValue, { color: '#7E22CE' }]}>
+                  {fraud?.high_risk_states}
                 </Text>
+                <Text style={styles.fraudLabel}>High Risk States</Text>
               </View>
+
               <View style={[styles.fraudCard, { backgroundColor: '#E0F2FE' }]}>
                 <Text style={[styles.fraudValue, { color: '#0369A1' }]}>
-                  4.2
+                  {fraud?.enumerator_risk_index}
                 </Text>
-                <Text style={[styles.fraudLabel, { color: '#0369A1' }]}>
-                  Enumerator Risk Index
-                </Text>
+                <Text style={styles.fraudLabel}>Enumerator Risk Index</Text>
               </View>
             </View>
-
+          </View>
+          <View style={styles.actionWrapper}>
             <View style={styles.actionRow}>
               <View style={{ flexDirection: 'row', gap: 12 }}>
                 <TouchableOpacity
@@ -399,23 +259,26 @@ const NationalDashboardScreen = () => {
                 >
                   <Text style={styles.btnDrillDownText}>🔍 Drill Down</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.btnAudit}
                   onPress={() =>
-                    showToast('Downloading audit reports(Pdf + Excel)...')
+                    showToast('Downloading audit reports (Pdf + Excel)...')
                   }
                 >
                   <Text style={styles.btnAuditText}>📥 Audit Reports</Text>
                 </TouchableOpacity>
+
                 <TouchableOpacity
                   style={styles.btnEscalate}
                   onPress={() =>
-                    showToast('🚨 Escalation sent to 7 high-risk state DMs')
+                    showToast('🚨 Escalation sent to high-risk states')
                   }
                 >
                   <Text style={styles.btnEscalateText}>🚨 Escalate</Text>
                 </TouchableOpacity>
               </View>
+
               <TouchableOpacity
                 style={styles.btnStateView}
                 onPress={() => navigation.navigate('StatePerformance')}
@@ -545,12 +408,6 @@ const styles = StyleSheet.create({
   fraudCard: { flex: 1, padding: 16, borderRadius: 8, alignItems: 'center' },
   fraudValue: { fontSize: 20, fontWeight: 'bold', marginBottom: 2 },
   fraudLabel: { fontSize: 11, fontWeight: '600', textAlign: 'center' },
-  actionRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginTop: 16,
-    alignItems: 'center',
-  },
   btnDrillDown: {
     backgroundColor: '#1E3A8A',
     paddingHorizontal: 12,
@@ -572,13 +429,6 @@ const styles = StyleSheet.create({
     borderRadius: 6,
   },
   btnEscalateText: { color: '#DC2626', fontWeight: 'bold', fontSize: 12 },
-  btnStateView: {
-    backgroundColor: '#F1F5F9',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 6,
-  },
-  btnStateViewText: { color: '#0F172A', fontWeight: 'bold', fontSize: 12 },
   lockIcon: {
     width: 34,
     height: 34,
@@ -587,6 +437,39 @@ const styles = StyleSheet.create({
     backgroundColor: '#334155',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+
+  actionWrapper: {
+    marginTop: 16,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 20,
+    borderWidth: 1,
+    borderColor: '#E2E8F0',
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 5,
+    elevation: 2,
+  },
+  actionRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 16,
+    alignItems: 'center',
+  },
+
+  btnStateView: {
+    backgroundColor: '#F1F5F9',
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 6,
+  },
+
+  btnStateViewText: {
+    color: '#0F172A',
+    fontWeight: 'bold',
+    fontSize: 12,
   },
 });
 

@@ -258,7 +258,6 @@ export const GetGeofiltersOptionsApi = createAsyncThunk(
   async (_, { rejectWithValue }) => {
     try {
       const response = await api.get(ENDPOINTS.GEO_FILTER_OPTIONS);
-      console.log('response====>', response);
       return response.data;
     } catch (error: any) {
       return handleThunkError(error, rejectWithValue);
