@@ -61,10 +61,10 @@ const StatePerformanceScreen = () => {
         </View>
 
         <View style={styles.headerRight}>
-          <TouchableOpacity style={styles.dropdownButton}>
+          {/* <TouchableOpacity style={styles.dropdownButton}>
             <Text style={styles.dropdownText}>All Districts</Text>
             <Text style={styles.dropdownArrow}>⌵</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
 
           <TouchableOpacity
             style={styles.exportButton}

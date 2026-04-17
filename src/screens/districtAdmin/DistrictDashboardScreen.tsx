@@ -121,18 +121,20 @@ const DistrictDashboardScreen = () => {
   const heatmapRows = useMemo(() => {
     const list = heatmap?.ward_completion_stats || [];
 
-    const getColor = (percent: number) => {
-      if (percent >= 90) return '#1E3A8A';
-      if (percent >= 70) return '#3B82F6';
-      if (percent >= 50) return '#10B981';
-      if (percent >= 30) return '#F59E0B';
-      if (percent > 0) return '#EF4444';
-      return '#E2E8F0';
+    const getColor = () => {
+      const colors = [
+        '#1E3A8A',
+        '#3B82F6',
+        '#10B981',
+        '#F59E0B',
+        '#EF4444',
+        '#E2E8F0',
+      ];
+
+      return colors[Math.floor(Math.random() * colors.length)];
     };
 
-    const colors = list.map((item: any) =>
-      getColor(Number(item?.completion_percent || 0)),
-    );
+    const colors = list.map((item: any) => getColor());
 
     return [
       colors.filter((_: any, i: number) => i % 2 === 0),
